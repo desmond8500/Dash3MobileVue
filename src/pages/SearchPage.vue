@@ -98,7 +98,12 @@ const formatAmount = (n: number | null | undefined) =>
           <ion-item v-if="results.clients.error" lines="none">
             <ion-text color="danger">{{ results.clients.error }}</ion-text>
           </ion-item>
-          <ion-item v-for="c in results.clients.items" :key="'c' + c.id" router-link="/tabs/customers" detail>
+          <ion-item
+            v-for="c in results.clients.items"
+            :key="'c' + c.id"
+            :router-link="`/tabs/home/erp/projets?client_id=${c.id}&client=${encodeURIComponent(c.name)}`"
+            detail
+          >
             <ion-label>
               <h3>{{ c.name }}</h3>
               <p>{{ c.description || c.address }}</p>
@@ -115,7 +120,7 @@ const formatAmount = (n: number | null | undefined) =>
           <ion-item v-if="results.projets.error" lines="none">
             <ion-text color="danger">{{ results.projets.error }}</ion-text>
           </ion-item>
-          <ion-item v-for="p in results.projets.items" :key="'p' + p.id">
+          <ion-item v-for="p in results.projets.items" :key="'p' + p.id" :router-link="`/tabs/home/erp/projets/${p.id}`" detail>
             <ion-label>
               <h3>{{ p.name }}</h3>
               <p>{{ p.description }}</p>
@@ -132,7 +137,7 @@ const formatAmount = (n: number | null | undefined) =>
           <ion-item v-if="results.devis.error" lines="none">
             <ion-text color="danger">{{ results.devis.error }}</ion-text>
           </ion-item>
-          <ion-item v-for="d in results.devis.items" :key="'d' + d.id">
+          <ion-item v-for="d in results.devis.items" :key="'d' + d.id" :router-link="`/tabs/home/erp/devis/${d.id}`" detail>
             <ion-label>
               <h3>{{ d.reference }}</h3>
               <p>{{ d.client_name }} — {{ d.projet_name }}</p>

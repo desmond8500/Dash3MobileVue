@@ -7,8 +7,6 @@ import {
   IonItem,
   IonLabel,
   IonTextarea,
-  IonToggle,
-  IonInput,
   IonNote,
   IonButton,
   IonIcon,
@@ -17,32 +15,20 @@ import {
 import { copyOutline, trashOutline } from "ionicons/icons";
 import { computed, ref, watch } from "vue";
 import Header from "@/components/header.vue";
-import { convertGalaxyLines, DEFAULT_GALAXY_OPTIONS, type GalaxyOptions } from "@/utils/galaxy";
+import { convertGalaxyLines, GALAXY_CODES, GALAXY_MAX_LENGTH, type GalaxyResult } from "@/utils/galaxy";
 import { toast } from "@/services/ui";
 
-const STORAGE_KEY = "dash3.galaxy";
+const STORAGE_KEY = "dash3.galaxy.text";
 
-// On garde le texte et les options entre deux ouvertures de la page
-const saved = (() => {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-  } catch {
-    return {};
-  }
-})();
+// Le texte saisi est gardé entre deux ouvertures de la page
+const text = ref<string>(localStorage.getItem(STORAGE_KEY) ?? "");
+watch(text, (v) => localStorage.setItem(STORAGE_KEY, v));
 
-const text = ref<string>(saved.text ?? "");
-const options = ref<GalaxyOptions>({ ...DEFAULT_GALAXY_OPTIONS, ...(saved.options ?? {}) });
+const results = computed(() => convertGalaxyLines(text.value));
+const showTable = ref(false);
 
-watch([text, options], () => localStorage.setItem(STORAGE_KEY, JSON.stringify({ text: text.value, options: options.value })), {
-  deep: true,
-});
-
-const results = computed(() =>
-  convertGalaxyLines(text.value, { ...options.value, maxLength: Math.max(1, Number(options.value.maxLength) || 16) })
-);
-const output = computed(() => results.value.map((r) => r.output).join("\n"));
-const truncatedCount = computed(() => results.value.filter((r) => r.truncated).length);
+/** Codes séparés par des espaces, prêts à recopier sur le clavier */
+const codesText = (r: GalaxyResult) => r.codes.join(" ");
 
 const copy = async (value: string) => {
   try {
@@ -52,11 +38,16 @@ const copy = async (value: string) => {
     await toast("Copie impossible sur cet appareil", "danger");
   }
 };
+
+const copyAll = () => copy(results.value.map((r) => `${r.text} : ${codesText(r)}`).join("\n"));
+
+// Table de référence regroupée par code (à et a partagent le 13, etc.)
+const table = Object.entries(GALAXY_CODES).map(([char, code]) => ({ char: char === " " ? "espace" : char.toUpperCase(), code }));
 </script>
 
 <template>
   <ion-page>
-    <Header title="Galaxy Dimension" back="/tabs/home" />
+    <Header title="Nomenclature Galaxy" back="/tabs/home" />
     <ion-content>
       <ion-list inset>
         <ion-list-header><ion-label>Texte à convertir</ion-label></ion-list-header>
@@ -64,10 +55,9 @@ const copy = async (value: string) => {
           <ion-textarea
             v-model="text"
             aria-label="Texte à convertir"
-            placeholder="Un libellé par ligne, ex. :&#10;Détecteur chambre parents&#10;Porte d'entrée principale"
+            placeholder="Un libellé par ligne, 16 caractères max."
             :auto-grow="true"
-            :rows="4"
-            autocapitalize="sentences"
+            :rows="3"
           />
         </ion-item>
         <ion-item v-if="text" lines="none">
@@ -77,62 +67,80 @@ const copy = async (value: string) => {
         </ion-item>
       </ion-list>
 
-      <ion-list inset>
-        <ion-list-header><ion-label>Options</ion-label></ion-list-header>
-        <ion-item>
-          <ion-input
-            v-model.number="options.maxLength"
-            label="Longueur maximale"
-            type="number"
-            inputmode="numeric"
-            min="1"
-            max="32"
-            class="ion-text-end"
-          />
-        </ion-item>
-        <ion-item>
-          <ion-toggle v-model="options.uppercase">Majuscules</ion-toggle>
-        </ion-item>
-        <ion-item lines="none">
-          <ion-toggle v-model="options.abbreviate">Abréger si trop long</ion-toggle>
-        </ion-item>
-      </ion-list>
-
       <ion-list v-if="results.length" inset>
         <ion-list-header>
-          <ion-label>Résultat</ion-label>
-          <ion-button size="small" @click="copy(output)"><ion-icon slot="start" :icon="copyOutline" />Tout copier</ion-button>
+          <ion-label>Codes</ion-label>
+          <ion-button v-if="results.length > 1" size="small" @click="copyAll">
+            <ion-icon slot="start" :icon="copyOutline" />Tout copier
+          </ion-button>
         </ion-list-header>
-        <ion-item v-for="(r, i) in results" :key="i" button :detail="false" @click="copy(r.output)">
-          <ion-label>
-            <h3 class="mono">{{ r.output || "—" }}</h3>
-            <p>{{ r.input }}</p>
+
+        <ion-item v-for="(r, i) in results" :key="i" button :detail="false" @click="copy(codesText(r))">
+          <ion-label class="ion-text-wrap">
+            <h3>{{ r.text }}</h3>
+            <div class="codes">
+              <span v-for="(c, j) in r.chars" :key="j" class="code" :class="{ unknown: c.code === null }">
+                <small>{{ c.char === " " ? "␣" : c.char }}</small>
+                <strong>{{ c.code ?? "??" }}</strong>
+              </span>
+            </div>
+            <p v-if="r.unknown.length">
+              <ion-text color="danger">Non pris en charge, ignoré : {{ r.unknown.join(" ") }}</ion-text>
+            </p>
+            <p v-if="r.truncated">
+              <ion-text color="warning">Coupé à {{ GALAXY_MAX_LENGTH }} caractères</ion-text>
+            </p>
           </ion-label>
-          <ion-note slot="end" :color="r.truncated ? 'danger' : r.abbreviated ? 'warning' : 'medium'">
-            {{ r.output.length }}/{{ options.maxLength }}
-          </ion-note>
+          <ion-note slot="end">{{ r.text.length }}/{{ GALAXY_MAX_LENGTH }}</ion-note>
         </ion-item>
       </ion-list>
 
-      <p v-if="truncatedCount" class="ion-padding-horizontal">
-        <ion-text color="danger">
-          {{ truncatedCount }} libellé(s) coupé(s) : raccourcissez-les à la main pour garder un texte lisible.
-        </ion-text>
-      </p>
       <p class="ion-padding-horizontal hint">
-        <ion-text color="medium">
-          Accents et caractères spéciaux retirés ; conservés : lettres, chiffres, espaces et - . / &amp; + ( ) '.
-          Touchez une ligne pour la copier.
-        </ion-text>
+        <ion-text color="medium">Touchez un libellé pour copier ses codes. Les accents sont ignorés (é → E).</ion-text>
       </p>
+
+      <ion-list inset>
+        <ion-item button :detail="false" @click="showTable = !showTable">
+          <ion-label>Table des codes</ion-label>
+          <ion-note slot="end">{{ showTable ? "Masquer" : "Afficher" }}</ion-note>
+        </ion-item>
+        <div v-if="showTable" class="table ion-padding">
+          <span v-for="t in table" :key="t.char" class="code">
+            <small>{{ t.char }}</small>
+            <strong>{{ t.code }}</strong>
+          </span>
+        </div>
+      </ion-list>
     </ion-content>
   </ion-page>
 </template>
 
 <style scoped>
-.mono {
+.codes,
+.table {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+.code {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 34px;
+  padding: 2px 4px;
+  border-radius: 6px;
+  border: 1px solid var(--ion-color-success);
   font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  letter-spacing: 0.04em;
+}
+.code small {
+  font-size: 0.7rem;
+  color: var(--ion-color-medium);
+  text-transform: uppercase;
+}
+.code.unknown {
+  border-color: var(--ion-color-danger);
+  color: var(--ion-color-danger);
 }
 .hint {
   font-size: 0.85rem;

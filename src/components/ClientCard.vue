@@ -16,7 +16,7 @@ import { IonItem,IonThumbnail,IonLabel } from "@ionic/vue";
 </script>
 
 <template>
-    <ion-item router-link="/projets" detail>
+    <ion-item :router-link="`/tabs/home/erp/projets?client_id=${client.id}&client=${encodeURIComponent(client.name)}`" detail>
         <ion-thumbnail slot="start">
             <img alt="IMG" :src="client.avatar" />
         </ion-thumbnail>
