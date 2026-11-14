@@ -28,9 +28,19 @@ Version mobile de Dash3
 
 ## ERP
 
-- [ ] Projets (liste et détail)
-- [ ] Devis (liste et détail)
-- [ ] Tâches (liste et détail)
+Pour chaque page ajout/modification/suppression basé sur Dash3
+
+- ClientsPage
+ - ProjetsPage
+   - ProjetPage
+     - DevisPage
+     - TachesPage
+     - JournauxPage
+     - JournalPage
+     - contactsPage
+     - NotesPage
+     - NotePage
+     - DocumentsPage
 
 ## Outils
 
