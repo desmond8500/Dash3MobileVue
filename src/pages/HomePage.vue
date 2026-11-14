@@ -55,7 +55,7 @@ const sections: { title: string; entries: MenuEntry[] }[] = [
   },
   {
     title: "Outils",
-    entries: [{ label: "Textes Galaxy Dimension", icon: hardwareChipOutline, to: "/tabs/home/tools/galaxy" }],
+    entries: [{ label: "Nomenclature Galaxy", icon: hardwareChipOutline, to: "/tabs/home/tools/galaxy" }],
   },
 ];
 
