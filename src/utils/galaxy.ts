@@ -1,176 +1,112 @@
 /**
- * Conversion de textes pour les centrales Honeywell Galaxy Dimension.
+ * Nomenclature Galaxy Dimension.
  *
- * Les libellés (zones, utilisateurs, groupes…) sont saisis sur un clavier
- * à afficheur limité : longueur maximale (16 caractères par défaut), pas
- * d'accents, jeu de caractères réduit. Cette fonction transforme un texte
- * libre en libellé utilisable tel quel.
+ * Sur le clavier de la centrale Honeywell Galaxy, un libellé (zone,
+ * utilisateur…) se saisit caractère par caractère sous forme de code à
+ * deux chiffres. Cette table reprend celle de la page « Nomenclature
+ * Galaxy » de Dash3.
  */
+export const GALAXY_CODES: Readonly<Record<string, string>> = {
+  " ": "10",
+  a: "13",
+  b: "15",
+  c: "16",
+  d: "17",
+  e: "18",
+  f: "19",
+  g: "20",
+  h: "22",
+  i: "23",
+  j: "24",
+  k: "25",
+  l: "26",
+  m: "27",
+  n: "28",
+  o: "31",
+  p: "33",
+  q: "34",
+  r: "35",
+  s: "36",
+  t: "37",
+  u: "38",
+  v: "40",
+  w: "41",
+  x: "42",
+  y: "44",
+  z: "45",
+  "0": "00",
+  "1": "01",
+  "2": "02",
+  "3": "03",
+  "4": "04",
+  "5": "05",
+  "6": "06",
+  "7": "07",
+  "8": "08",
+  "9": "09",
+};
 
-export interface GalaxyOptions {
-  /** Longueur maximale du libellé */
-  maxLength: number;
-  /** Passer en majuscules */
-  uppercase: boolean;
-  /** Abréger les mots courants si le texte est trop long */
-  abbreviate: boolean;
+/** Longueur maximale d'un libellé Galaxy */
+export const GALAXY_MAX_LENGTH = 16;
+
+export interface GalaxyChar {
+  /** Caractère tapé */
+  char: string;
+  /** Code clavier, ou null si le caractère n'existe pas dans la table */
+  code: string | null;
 }
-
-export const DEFAULT_GALAXY_OPTIONS: GalaxyOptions = {
-  maxLength: 16,
-  uppercase: true,
-  abbreviate: true,
-};
-
-/** Caractères conservés en plus des lettres, chiffres et espaces */
-const ALLOWED_PUNCTUATION = "-./&+()'";
-
-/** Abréviations utilisées seulement si le texte dépasse la longueur maximale */
-const ABBREVIATIONS: Record<string, string> = {
-  DETECTEUR: "DET",
-  DETECTION: "DET",
-  CONTACT: "CT",
-  MAGNETIQUE: "MAG",
-  INFRAROUGE: "IR",
-  VOLUMETRIQUE: "VOL",
-  BARRIERE: "BAR",
-  SIRENE: "SIR",
-  INTERIEURE: "INT",
-  INTERIEUR: "INT",
-  EXTERIEURE: "EXT",
-  EXTERIEUR: "EXT",
-  CHAMBRE: "CH",
-  PARENTS: "PAR",
-  ENFANTS: "ENF",
-  ENFANT: "ENF",
-  CUISINE: "CUIS",
-  SALON: "SAL",
-  BUREAU: "BUR",
-  COULOIR: "COUL",
-  ENTREE: "ENT",
-  ESCALIER: "ESC",
-  GARAGE: "GAR",
-  TERRASSE: "TERR",
-  FENETRE: "FEN",
-  PORTE: "PTE",
-  PORTAIL: "PTL",
-  PRINCIPALE: "PPLE",
-  PRINCIPAL: "PPL",
-  SECONDAIRE: "SEC",
-  ARRIERE: "ARR",
-  AVANT: "AV",
-  GAUCHE: "G",
-  DROITE: "D",
-  NIVEAU: "NIV",
-  ETAGE: "ET",
-  "REZ-DE-CHAUSSEE": "RDC",
-  "SOUS-SOL": "SS",
-  BATIMENT: "BAT",
-  MAGASIN: "MAG",
-  RECEPTION: "RECEP",
-  TECHNIQUE: "TECH",
-  LOCAL: "LOC",
-  SALLE: "SAL",
-  REUNION: "REU",
-  TOILETTES: "WC",
-  BOUTON: "BP",
-  PANIQUE: "PAN",
-  INCENDIE: "INC",
-  FUMEE: "FUM",
-  CLAVIER: "CLAV",
-  CENTRALE: "CTRL",
-  ALIMENTATION: "ALIM",
-  AUTOPROTECTION: "AP",
-};
-
-/** Mots de liaison retirés si le texte est trop long */
-const STOP_WORDS = new Set(["DE", "DU", "DES", "LA", "LE", "LES", "ET", "A", "AU", "AUX", "EN"]);
 
 export interface GalaxyResult {
   input: string;
-  output: string;
-  /** Le texte a dû être coupé (il dépasse encore après abréviation) */
+  /** Texte réellement converti (coupé à la longueur maximale) */
+  text: string;
+  chars: GalaxyChar[];
+  /** Codes des caractères reconnus, dans l'ordre */
+  codes: string[];
+  /** Caractères ignorés car absents de la table */
+  unknown: string[];
+  /** Le texte dépassait la longueur maximale */
   truncated: boolean;
-  /** Le texte a été abrégé */
-  abbreviated: boolean;
-}
-
-/** Retire les accents et remplace les caractères spéciaux */
-function clean(text: string, uppercase: boolean): string {
-  let s = text
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/[œŒ]/g, (c) => (c === "œ" ? "oe" : "OE"))
-    .replace(/[æÆ]/g, (c) => (c === "æ" ? "ae" : "AE"))
-    .replace(/ß/g, "ss")
-    .replace(/[’‘`´]/g, "'")
-    .replace(/[–—_]/g, "-");
-
-  if (uppercase) s = s.toUpperCase();
-
-  const allowed = new RegExp(`[^A-Za-z0-9 ${ALLOWED_PUNCTUATION.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&")}]`, "g");
-  return s.replace(allowed, " ").replace(/\s+/g, " ").trim();
-}
-
-/** Applique au mot abrégé la casse du mot d'origine (MAJ, Capitale, minuscule) */
-function matchCase(original: string, abbr: string): string {
-  if (original === original.toUpperCase()) return abbr.toUpperCase();
-  if (original[0] === original[0].toUpperCase()) return abbr[0].toUpperCase() + abbr.slice(1).toLowerCase();
-  return abbr.toLowerCase();
-}
-
-/** Abrège un mot en gardant la ponctuation qui l'entoure : « (ETAGE) » → « (ET) » */
-function abbreviateWord(word: string): string {
-  const m = word.match(/^([^A-Za-z0-9]*)([A-Za-z0-9'-]+?)([^A-Za-z0-9]*)$/);
-  if (!m) return word;
-  const [, before, core, after] = m;
-  const abbr = ABBREVIATIONS[core.toUpperCase()];
-  return abbr ? before + matchCase(core, abbr) + after : word;
 }
 
 /**
- * Raccourcit progressivement jusqu'à tenir dans maxLength :
- * 1. retire les élisions (D', L') et les mots de liaison ;
- * 2. abrège les mots un par un, du plus long au plus court.
+ * Ramène un caractère à son entrée dans la table :
+ * minuscule et sans accent (à → a, é/è/ê → e, ç → c…).
  */
-function shorten(text: string, maxLength: number): string {
-  const fits = (w: string[]) => w.join(" ").length <= maxLength;
-
-  let words = text.split(" ").map((w) => w.replace(/^[DLdl]'/, "")).filter(Boolean);
-  if (fits(words)) return words.join(" ");
-
-  words = words.filter((w) => !STOP_WORDS.has(w.toUpperCase()));
-  if (fits(words)) return words.join(" ");
-
-  const order = words.map((w, i) => i).sort((a, b) => words[b].length - words[a].length);
-  for (const i of order) {
-    words[i] = abbreviateWord(words[i]);
-    if (fits(words)) break;
-  }
-  return words.join(" ");
+function normalizeChar(char: string): string {
+  return char
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "");
 }
 
-export function convertGalaxy(text: string, options: Partial<GalaxyOptions> = {}): GalaxyResult {
-  const opts = { ...DEFAULT_GALAXY_OPTIONS, ...options };
-  let output = clean(text, opts.uppercase);
-  let abbreviated = false;
-
-  if (opts.abbreviate && output.length > opts.maxLength) {
-    const short = shorten(output, opts.maxLength);
-    abbreviated = short !== output;
-    output = short;
-  }
-
-  const truncated = output.length > opts.maxLength;
-  if (truncated) output = output.slice(0, opts.maxLength).trimEnd();
-
-  return { input: text, output, truncated, abbreviated };
+/** Code Galaxy d'un caractère, ou null s'il n'est pas pris en charge */
+export function galaxyCode(char: string): string | null {
+  return GALAXY_CODES[normalizeChar(char)] ?? null;
 }
 
-/** Convertit un texte multi-lignes : une ligne = un libellé */
-export function convertGalaxyLines(text: string, options: Partial<GalaxyOptions> = {}): GalaxyResult[] {
+/** Convertit un libellé en suite de codes Galaxy */
+export function convertGalaxy(input: string, maxLength = GALAXY_MAX_LENGTH): GalaxyResult {
+  const all = Array.from(input);
+  const truncated = all.length > maxLength;
+  const kept = all.slice(0, maxLength);
+
+  const chars = kept.map((char) => ({ char, code: galaxyCode(char) }));
+  return {
+    input,
+    text: kept.join(""),
+    chars,
+    codes: chars.filter((c) => c.code !== null).map((c) => c.code as string),
+    unknown: [...new Set(chars.filter((c) => c.code === null).map((c) => c.char))],
+    truncated,
+  };
+}
+
+/** Convertit plusieurs libellés : une ligne non vide = un libellé */
+export function convertGalaxyLines(text: string, maxLength = GALAXY_MAX_LENGTH): GalaxyResult[] {
   return text
     .split(/\r?\n/)
-    .filter((l) => l.trim() !== "")
-    .map((l) => convertGalaxy(l, options));
+    .map((l) => l.trim())
+    .filter((l) => l !== "")
+    .map((l) => convertGalaxy(l, maxLength));
 }
