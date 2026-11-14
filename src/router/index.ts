@@ -12,13 +12,28 @@ const routes: Array<RouteRecordRaw> = [
     path: '/tabs/',
     component: TabsPage,
     children: [
+      // Menu et sous-pages (l'onglet « Menu » reste actif)
       { path: 'home', component: () => import('@/pages/HomePage.vue') },
+      { path: 'home/stock/articles', component: () => import('@/pages/stock/ArticlesPage.vue') },
+      { path: 'home/stock/articles/new', component: () => import('@/pages/stock/ArticleFormPage.vue') },
+      { path: 'home/stock/articles/:id', component: () => import('@/pages/stock/ArticlePage.vue') },
+      { path: 'home/stock/articles/:id/edit', component: () => import('@/pages/stock/ArticleFormPage.vue') },
+      { path: 'home/stock/providers', component: () => import('@/pages/stock/ProvidersPage.vue') },
+      { path: 'home/stock/brands', component: () => import('@/pages/stock/BrandsPage.vue') },
+      { path: 'home/tools/galaxy', component: () => import('@/pages/tools/GalaxyPage.vue') },
+
+      { path: 'search', component: () => import('@/pages/SearchPage.vue') },
+      { path: 'settings', component: () => import('@/pages/SettingsPage.vue') },
+      { path: 'favorites', component: () => import('@/pages/FavoritesPage.vue') },
+
+      // ERP
       { path: 'customers', component: () => import('@/pages/ClientsPage.vue') },
       { path: 'quotes', component: () => import('@/pages/QuotesPage.vue') },
       { path: 'tasks', component: () => import('@/pages/TasksPage.vue') },
-      { path: 'items', component: () => import('@/pages/ItemsPage.vue') },
-      { path: 'galaxy', component: () => import('@/pages/GalaxyPage.vue') },
-      { path: 'favorites', component: () => import('@/pages/FavoritesPage.vue') },
+
+      // Anciennes adresses
+      { path: 'items', redirect: '/tabs/home/stock/articles' },
+      { path: 'galaxy', redirect: '/tabs/home/tools/galaxy' },
     ]
   }
 ]

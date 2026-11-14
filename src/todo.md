@@ -6,30 +6,32 @@ Version mobile de Dash3
 
 ## Page de menu
 
-- [] ERP
-- [] Stock
-- [] Outils
-- [] Recherche (clients, projets, devis)
+- [x] ERP
+- [x] Stock
+- [x] Outils
+- [x] Recherche (clients, projets, devis)
 
 ## Paramètres
 
-- [] Ajouter la page de paramètres
+- [x] Ajouter la page de paramètres
 
 ## Articles
 
-- [] Intégrer la gestion de stock
-  - Lister les articles
-    - Page article détail
-    - Ajout et modifications
-  - Lister les fournisseurs
-    - Ajout et modification
-  - Lister les marques
-    - Ajout et modification
- 
+- [x] Intégrer la gestion de stock
+  - [x] Lister les articles
+    - [x] Page article détail
+    - [x] Ajout et modifications
+  - [x] Lister les fournisseurs
+    - [x] Ajout et modification
+  - [x] Lister les marques
+    - [x] Ajout et modification
+
 ## ERP
+
+- [ ] Projets (liste et détail)
+- [ ] Devis (liste et détail)
+- [ ] Tâches (liste et détail)
 
 ## Outils
 
-- [] Convertion des textes galaxy dimension
-- 
-
+- [x] Conversion des textes Galaxy Dimension

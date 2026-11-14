@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router';
+import { initTheme } from './services/settings';
 
 import { IonicVue } from '@ionic/vue';
 
@@ -28,12 +29,15 @@ import '@ionic/vue/css/display.css';
  */
 
 /* @import '@ionic/vue/css/palettes/dark.always.css'; */
-/* @import '@ionic/vue/css/palettes/dark.class.css'; */
-import '@ionic/vue/css/palettes/dark.system.css';
+/* Palette sombre pilotée par la classe .ion-palette-dark (voir Paramètres > Thème) */
+import '@ionic/vue/css/palettes/dark.class.css';
+/* import '@ionic/vue/css/palettes/dark.system.css'; */
 
 /* Theme variables */
 import './theme/variables.css';
 
+
+initTheme();
 
 const app = createApp(App)
   .use(IonicVue,{
