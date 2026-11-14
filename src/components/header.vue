@@ -9,7 +9,8 @@ import {
   IonIcon,
 } from "@ionic/vue";
 
-import { arrowBack } from "ionicons/icons";
+import { arrowBack, logOutOutline } from "ionicons/icons";
+import { logout } from "@/services/api";
 import { useIonRouter } from "@ionic/vue";
 
 const router = useIonRouter();
@@ -18,6 +19,11 @@ const props = defineProps<{
   title: string;
   back?: string;
 }>();
+
+const signOut = async () => {
+  await logout();
+  router.replace("/login");
+};
 
 const goBack = () => {
   if (props.back) {
@@ -41,8 +47,11 @@ const goBack = () => {
         {{ title?.toUpperCase() || "TITRE PAR DÉFAUT" }}
       </IonTitle>
 
-      <!-- Bouton retour -->
+      <!-- Déconnexion et retour -->
       <IonButtons slot="end">
+        <IonButton aria-label="Déconnexion" @click="signOut">
+          <IonIcon :icon="logOutOutline" />
+        </IonButton>
         <IonButton @click="goBack">
           <IonIcon :icon="arrowBack" />
         </IonButton>
