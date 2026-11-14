@@ -20,6 +20,7 @@ import {
   businessOutline,
   pricetagOutline,
   hardwareChipOutline,
+  calendarOutline,
 } from "ionicons/icons";
 import Header from "@/components/header.vue";
 import { currentUser } from "@/services/auth";
@@ -43,6 +44,7 @@ const sections: { title: string; entries: MenuEntry[] }[] = [
       { label: "Projets", icon: briefcaseOutline, to: "/tabs/home/erp/projets" },
       { label: "Devis", icon: documentTextOutline, to: "/tabs/home/erp/devis" },
       { label: "Tâches", icon: checkmarkCircleOutline, to: "/tabs/home/erp/taches" },
+      { label: "Planning de la semaine", icon: calendarOutline, to: "/tabs/planning" },
     ],
   },
   {

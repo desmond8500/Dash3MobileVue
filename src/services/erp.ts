@@ -148,3 +148,26 @@ export async function getTache(id: string | number): Promise<TacheDetail> {
   if (!data?.success) throw { response: { data } };
   return data.data;
 }
+
+// ---------- Planning hebdomadaire ----------
+
+/** Date locale au format AAAA-MM-JJ (sans décalage UTC) */
+export const dayKey = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+/** Tâches dont l'échéance tombe entre from et to (inclus) */
+export async function listWeekTasks(from: string, to: string): Promise<Tache[]> {
+  const { data } = await api.get("/tasks", { params: { from, to, per_page: 100 } });
+  return normalizeList<Tache>(data).items;
+}
+
+/** Statut : 4 = Terminé, 1 = Nouveau */
+export async function setTaskStatut(id: number, statut_id: number) {
+  await api.post(`/tasks/${id}/statut`, { statut_id });
+}
+
+/** Crée une tâche avec une échéance au jour donné */
+export async function createDayTask(name: string, date: string): Promise<Tache> {
+  const { data } = await api.post("/tasks", { name, expiration_date: date, statut_id: 1, priority_id: 1 });
+  return data.data;
+}

@@ -28,6 +28,7 @@ const routes: Array<RouteRecordRaw> = [
       { path: 'home/erp/taches/:id', component: () => import('@/pages/erp/TachePage.vue') },
       { path: 'home/tools/galaxy', component: () => import('@/pages/tools/GalaxyPage.vue') },
 
+      { path: 'planning', component: () => import('@/pages/erp/PlanningPage.vue') },
       { path: 'search', component: () => import('@/pages/SearchPage.vue') },
       { path: 'settings', component: () => import('@/pages/SettingsPage.vue') },
       { path: 'favorites', component: () => import('@/pages/FavoritesPage.vue') },

@@ -31,6 +31,7 @@ Version mobile de Dash3
 - [x] Projets (liste et détail)
 - [x] Devis (liste et détail)
 - [x] Tâches (liste et détail)
+- [x] Planning hebdomadaire (onglet Planning)
 
 ## Outils
 

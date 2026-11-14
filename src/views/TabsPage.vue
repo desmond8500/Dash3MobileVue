@@ -8,6 +8,11 @@
           <ion-label>Menu</ion-label>
         </ion-tab-button>
 
+        <ion-tab-button tab="planning" href="/tabs/planning">
+          <ion-icon aria-hidden="true" :icon="calendarOutline" />
+          <ion-label>Planning</ion-label>
+        </ion-tab-button>
+
         <ion-tab-button tab="search" href="/tabs/search">
           <ion-icon aria-hidden="true" :icon="searchOutline" />
           <ion-label>Recherche</ion-label>
@@ -29,5 +34,5 @@
 
 <script setup lang="ts">
 import { IonTabBar, IonTabButton, IonTabs, IonLabel, IonIcon, IonPage, IonRouterOutlet } from '@ionic/vue';
-import { gridOutline, searchOutline, heartOutline, settingsOutline } from 'ionicons/icons';
+import { gridOutline, calendarOutline, searchOutline, heartOutline, settingsOutline } from 'ionicons/icons';
 </script>
