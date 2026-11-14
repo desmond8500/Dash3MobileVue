@@ -7,7 +7,16 @@ import ClientCard from "@/components/ClientCard.vue";
 import { ref, onMounted } from "vue";
 import api from "@/services/api";
 
-const clients = ref([]);
+interface Client {
+  id: number;
+  name: string;
+  description: string;
+  avatar: string;
+  status: string;
+  type: string;
+}
+
+const clients = ref<Client[]>([]);
 const page = ref({
   current_page: 1,
   last_page: 1,
@@ -54,7 +63,7 @@ onMounted(getClients);
   <ion-page>
     <Header title="Clients" />
     <ion-content class="ion-padding">
-        <ion-searchbar animated="true" placeholder="Client" v-model="search"  debounce="500" @ionInput="getClients()" @keydown.enter="getClients()" ></ion-searchbar>
+        <ion-searchbar :animated="true" placeholder="Client" v-model="search" :debounce="500" @keydown.enter="getClients()"></ion-searchbar>
       <p v-if="loading">Chargement...</p>
       <p v-if="error">{{ error }}</p>
 

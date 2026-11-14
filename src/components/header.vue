@@ -27,7 +27,7 @@ const signOut = async () => {
 
 const goBack = () => {
   if (props.back) {
-    router.push(props.back, "back");
+    router.navigate(props.back, "back", "push");
   } else {
     router.back();
   }
