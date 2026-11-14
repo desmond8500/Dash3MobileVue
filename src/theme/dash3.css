@@ -1,0 +1,175 @@
+/* Styles des composants Ionic d'après le design Dash3 (cartes arrondies, pastilles, recherche). */
+
+/* ---------- Titres de section (« Inventory », « Transaction » du design) ---------- */
+ion-list-header {
+  --color: var(--dash-title);
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: 0;
+}
+ion-list-header ion-label {
+  font-weight: 700;
+}
+
+/* ---------- Listes « inset » : cartes blanches à bord fin ---------- */
+ion-list[inset="true"],
+ion-list.list-inset {
+  border-radius: 14px;
+  border: 1px solid var(--dash-line);
+  box-shadow: none;
+  background: var(--dash-sheet);
+}
+ion-list {
+  background: transparent;
+}
+ion-item {
+  --background: var(--dash-sheet);
+  --border-color: var(--dash-line);
+  --color: var(--dash-text);
+}
+ion-item h3 {
+  font-weight: 700;
+  color: var(--dash-text);
+}
+ion-note {
+  color: var(--dash-muted);
+}
+
+/* ---------- Barre de recherche : champ arrondi gris clair ---------- */
+ion-searchbar {
+  --background: var(--dash-soft);
+  --border-radius: 12px;
+  --box-shadow: none;
+  --icon-color: var(--dash-muted);
+  --placeholder-color: var(--dash-muted);
+  --color: var(--dash-text);
+}
+ion-searchbar .searchbar-input-container {
+  border: 1px solid var(--dash-line);
+  border-radius: 12px;
+}
+
+/* ---------- Segments : pastilles (« Total (17) », « In Stock »…) ---------- */
+ion-segment {
+  --background: transparent;
+  gap: 6px;
+}
+ion-segment-button {
+  --background: var(--dash-soft);
+  --background-checked: var(--ion-color-primary);
+  --color: var(--dash-muted);
+  --color-checked: #ffffff;
+  --indicator-color: transparent;
+  --border-radius: 999px;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  min-height: 32px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+}
+ion-segment-button::part(indicator) {
+  display: none;
+}
+
+/* ---------- Pastilles de statut (Complete / Pending…) ---------- */
+ion-badge {
+  --padding-start: 10px;
+  --padding-end: 10px;
+  --padding-top: 4px;
+  --padding-bottom: 4px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.7rem;
+}
+
+/* ---------- Boutons ---------- */
+ion-button {
+  --border-radius: 10px;
+  --box-shadow: none;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 700;
+}
+ion-fab-button {
+  --background: var(--ion-color-primary);
+  --background-activated: var(--ion-color-primary-shade);
+  --box-shadow: 0 6px 16px rgba(var(--ion-color-primary-rgb), 0.35);
+}
+
+/* ---------- Champs de formulaire ---------- */
+ion-input,
+ion-textarea,
+ion-select {
+  --highlight-color-focused: var(--ion-color-primary);
+}
+
+/* ---------- Puces ---------- */
+ion-chip {
+  --background: rgba(var(--ion-color-primary-rgb), 0.12);
+  --color: var(--ion-color-primary);
+  font-weight: 600;
+}
+
+/* ---------- Fenêtres modales : en-tête bleu canard ---------- */
+ion-modal ion-toolbar {
+  --background: var(--dash-header);
+  --color: #ffffff;
+}
+ion-modal ion-content {
+  --background: var(--dash-sheet);
+}
+
+/* ---------- Barre d'onglets : blanche, onglet actif surélevé dans un rond ---------- */
+ion-tab-bar {
+  --background: var(--dash-sheet);
+  --border: 0;
+  height: 64px;
+  box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.06);
+  overflow: visible;
+  contain: none;
+}
+ion-tab-button {
+  --color: var(--dash-muted);
+  --color-selected: var(--ion-color-primary);
+  overflow: visible;
+  contain: none;
+  font-size: 0.7rem;
+}
+ion-tab-button ion-icon {
+  font-size: 22px;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+ion-tab-button ion-label {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  font-weight: 700;
+}
+ion-tab-button.tab-selected ion-icon {
+  color: #ffffff;
+  background: var(--ion-color-primary);
+  border-radius: 50%;
+  padding: 11px;
+  box-sizing: content-box;
+  transform: translateY(-14px);
+  box-shadow: 0 0 0 5px var(--dash-sheet), 0 6px 14px rgba(var(--ion-color-primary-rgb), 0.4);
+}
+ion-tab-button.tab-selected ion-label {
+  opacity: 1;
+  margin-top: -12px;
+}
+
+/* ---------- Utilitaires ---------- */
+.dash-title {
+  color: var(--dash-title);
+  font-weight: 700;
+  font-size: 1.15rem;
+  margin: 0;
+}
+.dash-card {
+  background: var(--dash-sheet);
+  border: 1px solid var(--dash-line);
+  border-radius: 14px;
+}

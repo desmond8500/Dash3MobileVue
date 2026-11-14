@@ -4,8 +4,13 @@
       <ion-router-outlet></ion-router-outlet>
       <ion-tab-bar slot="bottom">
         <ion-tab-button tab="home" href="/tabs/home">
-          <ion-icon aria-hidden="true" :icon="gridOutline" />
-          <ion-label>Menu</ion-label>
+          <ion-icon aria-hidden="true" :icon="homeOutline" />
+          <ion-label>Accueil</ion-label>
+        </ion-tab-button>
+
+        <ion-tab-button tab="planning" href="/tabs/planning">
+          <ion-icon aria-hidden="true" :icon="calendarOutline" />
+          <ion-label>Planning</ion-label>
         </ion-tab-button>
 
         <ion-tab-button tab="search" href="/tabs/search">
@@ -19,8 +24,8 @@
         </ion-tab-button>
 
         <ion-tab-button tab="settings" href="/tabs/settings">
-          <ion-icon aria-hidden="true" :icon="settingsOutline" />
-          <ion-label>Paramètres</ion-label>
+          <ion-icon aria-hidden="true" :icon="personOutline" />
+          <ion-label>Profil</ion-label>
         </ion-tab-button>
       </ion-tab-bar>
     </ion-tabs>
@@ -29,5 +34,5 @@
 
 <script setup lang="ts">
 import { IonTabBar, IonTabButton, IonTabs, IonLabel, IonIcon, IonPage, IonRouterOutlet } from '@ionic/vue';
-import { gridOutline, searchOutline, heartOutline, settingsOutline } from 'ionicons/icons';
+import { homeOutline, calendarOutline, searchOutline, heartOutline, personOutline } from 'ionicons/icons';
 </script>
