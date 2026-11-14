@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { IonPage, IonContent, } from "@ionic/vue";
+import { IonPage, IonContent, IonSearchbar, IonButton } from "@ionic/vue";
 import Header from "@/components/header.vue";
 import ClientCard from "@/components/ClientCard.vue";
 
