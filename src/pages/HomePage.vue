@@ -40,9 +40,9 @@ const sections: { title: string; entries: MenuEntry[] }[] = [
     title: "ERP",
     entries: [
       { label: "Clients", icon: peopleOutline, to: "/tabs/customers" },
-      { label: "Projets", icon: briefcaseOutline, note: "Bientôt" },
-      { label: "Devis", icon: documentTextOutline, note: "Bientôt" },
-      { label: "Tâches", icon: checkmarkCircleOutline, note: "Bientôt" },
+      { label: "Projets", icon: briefcaseOutline, to: "/tabs/home/erp/projets" },
+      { label: "Devis", icon: documentTextOutline, to: "/tabs/home/erp/devis" },
+      { label: "Tâches", icon: checkmarkCircleOutline, to: "/tabs/home/erp/taches" },
     ],
   },
   {

@@ -7,7 +7,7 @@ import { setUnauthorizedHandler } from '@/services/api';
 const routes: Array<RouteRecordRaw> = [
   { path: '/', redirect: '/tabs/home' },
   { path: '/login', component: () => import('@/pages/LoginPage.vue'), meta: { guest: true } },
-  { path: '/projets', component: () => import('@/pages/ProjetsPage.vue') },
+  { path: '/projets', redirect: '/tabs/home/erp/projets' },
   {
     path: '/tabs/',
     component: TabsPage,
@@ -20,6 +20,12 @@ const routes: Array<RouteRecordRaw> = [
       { path: 'home/stock/articles/:id/edit', component: () => import('@/pages/stock/ArticleFormPage.vue') },
       { path: 'home/stock/providers', component: () => import('@/pages/stock/ProvidersPage.vue') },
       { path: 'home/stock/brands', component: () => import('@/pages/stock/BrandsPage.vue') },
+      { path: 'home/erp/projets', component: () => import('@/pages/erp/ProjetsPage.vue') },
+      { path: 'home/erp/projets/:id', component: () => import('@/pages/erp/ProjetPage.vue') },
+      { path: 'home/erp/devis', component: () => import('@/pages/erp/DevisListPage.vue') },
+      { path: 'home/erp/devis/:id', component: () => import('@/pages/erp/DevisPage.vue') },
+      { path: 'home/erp/taches', component: () => import('@/pages/erp/TachesPage.vue') },
+      { path: 'home/erp/taches/:id', component: () => import('@/pages/erp/TachePage.vue') },
       { path: 'home/tools/galaxy', component: () => import('@/pages/tools/GalaxyPage.vue') },
 
       { path: 'search', component: () => import('@/pages/SearchPage.vue') },
@@ -28,11 +34,11 @@ const routes: Array<RouteRecordRaw> = [
 
       // ERP
       { path: 'customers', component: () => import('@/pages/ClientsPage.vue') },
-      { path: 'quotes', component: () => import('@/pages/QuotesPage.vue') },
-      { path: 'tasks', component: () => import('@/pages/TasksPage.vue') },
 
       // Anciennes adresses
       { path: 'items', redirect: '/tabs/home/stock/articles' },
+      { path: 'quotes', redirect: '/tabs/home/erp/devis' },
+      { path: 'tasks', redirect: '/tabs/home/erp/taches' },
       { path: 'galaxy', redirect: '/tabs/home/tools/galaxy' },
     ]
   }
