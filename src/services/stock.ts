@@ -19,6 +19,20 @@ export interface Article {
   provider_id: number | null;
   provider_name?: string | null;
   image?: string;
+  tags?: string[];
+}
+
+export interface ArticleImage {
+  id: number;
+  image: string;
+  path: string;
+  is_default: boolean;
+}
+
+export interface Dependance {
+  id: number;
+  quantity: number;
+  article: Article;
 }
 
 export interface Provider {
@@ -64,7 +78,7 @@ export async function getArticle(id: number | string): Promise<Article> {
   return data.data;
 }
 
-export async function getArticleImages(id: number | string): Promise<{ id: number; image: string }[]> {
+export async function getArticleImages(id: number | string): Promise<ArticleImage[]> {
   const { data } = await api.get(`/items_image/${id}`);
   return data?.data ?? [];
 }
@@ -120,4 +134,63 @@ export async function saveBrand(payload: Partial<Brand>, id?: number): Promise<B
 
 export async function deleteBrand(id: number) {
   await api.delete(`/brands/${id}`);
+}
+
+// ---------- Page article : mêmes actions que Dash3 ----------
+
+/** Quantité en stock +/− */
+export async function adjustQuantity(id: number, delta: number): Promise<number> {
+  const { data } = await api.post(`/items/${id}/quantity`, { delta });
+  return data.data.quantity;
+}
+
+/** Ajoute l'article aux commandes (achats) */
+export async function orderArticle(id: number, quantity = 1) {
+  await api.post(`/items/${id}/commande`, { quantity });
+}
+
+export async function attachTag(id: number, name: string): Promise<string[]> {
+  const { data } = await api.post(`/items/${id}/tags`, { name });
+  return data.data;
+}
+
+export async function detachTag(id: number, name: string): Promise<string[]> {
+  const { data } = await api.delete(`/items/${id}/tags`, { params: { name } });
+  return data.data;
+}
+
+export async function uploadImages(id: number, files: File[]): Promise<ArticleImage[]> {
+  const form = new FormData();
+  files.forEach((f) => form.append("images[]", f));
+  const { data } = await api.post(`/items/${id}/images`, form);
+  return data.data;
+}
+
+export async function setDefaultImage(id: number, path: string): Promise<string> {
+  const { data } = await api.post(`/items/${id}/image-default`, { path });
+  return data.data.image;
+}
+
+export async function deleteImage(id: number, path: string): Promise<ArticleImage[]> {
+  const { data } = await api.delete(`/items/${id}/images`, { params: { path } });
+  return data.data;
+}
+
+export async function getDependances(id: number | string): Promise<Dependance[]> {
+  const { data } = await api.get(`/items/${id}/dependances`);
+  return data.data ?? [];
+}
+
+export async function addDependance(id: number, dependenceId: number): Promise<Dependance[]> {
+  const { data } = await api.post(`/items/${id}/dependances`, { dependence_id: dependenceId });
+  return data.data ?? [];
+}
+
+export async function adjustDependance(depId: number, delta: number): Promise<number> {
+  const { data } = await api.post(`/dependances/${depId}/quantity`, { delta });
+  return data.data.quantity;
+}
+
+export async function removeDependance(depId: number) {
+  await api.delete(`/dependances/${depId}`);
 }

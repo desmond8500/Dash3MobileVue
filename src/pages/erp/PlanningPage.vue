@@ -4,11 +4,42 @@
  * les autres jours repliés en grands titres. Les tâches sont celles de Dash3 dont
  * l'échéance tombe ce jour-là ; cocher une tâche la passe en « Terminé ».
  */
-import { IonPage, IonContent, IonRefresher, IonRefresherContent, IonIcon, onIonViewWillEnter } from "@ionic/vue";
-import { chevronBack, chevronForward, arrowBack } from "ionicons/icons";
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import {
+  IonPage,
+  IonContent,
+  IonRefresher,
+  IonRefresherContent,
+  IonIcon,
+  IonModal,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonButtons,
+  IonButton,
+  IonList,
+  IonItem,
+  IonInput,
+  IonTextarea,
+  IonSelect,
+  IonSelectOption,
+  IonSpinner,
+  onIonViewWillEnter,
+} from "@ionic/vue";
+import { chevronBack, chevronForward, arrowBack, addCircleOutline } from "ionicons/icons";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useIonRouter } from "@ionic/vue";
-import { createDayTask, dayKey, listWeekTasks, setTaskStatut, type Tache } from "@/services/erp";
+import {
+  createDayTask,
+  createTask,
+  dayKey,
+  getProjet,
+  listClientsLite,
+  listProjetsLite,
+  listWeekTasks,
+  setTaskStatut,
+  type Projet,
+  type Tache,
+} from "@/services/erp";
 import { errorMessage, toast } from "@/services/ui";
 
 const router = useIonRouter();
@@ -127,6 +158,81 @@ async function add(key: string) {
   }
 }
 
+// ---------- Ajout détaillé : lier ou non à un client, un projet, un devis ----------
+const formOpen = ref(false);
+const saving = ref(false);
+const form = ref({ name: "", description: "", date: "", client_id: null as number | null, projet_id: null as number | null, devis_id: null as number | null });
+const clients = ref<{ id: number; name: string }[]>([]);
+const projets = ref<Projet[]>([]);
+const devis = ref<{ id: number; reference: string; description: string | null }[]>([]);
+
+async function openForm(key: string) {
+  form.value = { name: newTask.value.trim(), description: "", date: key, client_id: null, projet_id: null, devis_id: null };
+  newTask.value = "";
+  formOpen.value = true;
+  try {
+    if (!clients.value.length) clients.value = await listClientsLite();
+    projets.value = await listProjetsLite();
+  } catch (err) {
+    await toast(errorMessage(err), "danger");
+  }
+}
+// Le client filtre les projets, le projet filtre les devis
+watch(
+  () => form.value.client_id,
+  async (id) => {
+    if (!formOpen.value) return;
+    projets.value = await listProjetsLite(id).catch(() => []);
+    if (form.value.projet_id && !projets.value.some((p) => p.id === form.value.projet_id)) form.value.projet_id = null;
+  }
+);
+watch(
+  () => form.value.projet_id,
+  async (id) => {
+    form.value.devis_id = null;
+    devis.value = [];
+    if (!id) return;
+    const p = await getProjet(id).catch(() => null);
+    devis.value = p?.invoices ?? [];
+    if (p && !form.value.client_id) form.value.client_id = p.client_id;
+  }
+);
+
+async function submitForm() {
+  const f = form.value;
+  if (!f.name.trim() || saving.value) return;
+  saving.value = true;
+  try {
+    const created = await createTask({
+      name: f.name.trim(),
+      description: f.description.trim() || null,
+      expiration_date: f.date,
+      client_id: f.client_id,
+      projet_id: f.projet_id,
+      devis_id: f.devis_id,
+    });
+    const projet = projets.value.find((p) => p.id === f.projet_id);
+    const client = clients.value.find((c) => c.id === f.client_id);
+    tasks.value.push({
+      ...created,
+      expiration_date: f.date,
+      projet: projet ? { id: projet.id, name: projet.name } : null,
+      client: client ?? null,
+    });
+    formOpen.value = false;
+    await toast("Tâche ajoutée");
+  } catch (err) {
+    await toast(errorMessage(err), "danger");
+  } finally {
+    saving.value = false;
+  }
+}
+
+const linkLine = (t: Tache) => [t.client?.name, t.projet?.name].filter(Boolean).join(" › ");
+const openLinked = (t: Tache) => {
+  if (t.projet?.id) router.push(`/tabs/home/erp/projets/${t.projet.id}`);
+};
+
 // ---------- Formatage ----------
 const dateLine = (d: Date) => {
   const date = d.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
@@ -175,24 +281,79 @@ const dateLine = (d: Date) => {
                 <label class="task" :class="{ done: isDone(t) }">
                   <input type="checkbox" :checked="isDone(t)" @change="toggle(t)" />
                   <span class="box" aria-hidden="true"></span>
-                  <span class="label">{{ t.name }}</span>
+                  <span class="label">
+                    {{ t.name }}
+                    <small v-if="linkLine(t)" class="link" @click.prevent.stop="openLinked(t)">{{ linkLine(t) }}</small>
+                  </span>
                 </label>
               </li>
             </ul>
 
-            <input
-              v-model="newTask"
-              class="new-task"
-              type="text"
-              placeholder="Ajouter une tâche…"
-              enterkeyhint="done"
-              :disabled="adding"
-              @keyup.enter="add(d.key)"
-              @blur="add(d.key)"
-            />
+            <div class="new-row">
+              <input
+                v-model="newTask"
+                class="new-task"
+                type="text"
+                placeholder="Ajouter une tâche…"
+                enterkeyhint="done"
+                :disabled="adding"
+                @keyup.enter="add(d.key)"
+              />
+              <button class="icon-btn add-btn" aria-label="Ajouter une tâche liée à un client, un projet ou un devis" @click="openForm(d.key)">
+                <ion-icon :icon="addCircleOutline" />
+              </button>
+            </div>
           </div>
         </section>
       </div>
+
+      <!-- Ajout manuel : tâche liée ou non à un client, un projet, un devis -->
+      <ion-modal :is-open="formOpen" @didDismiss="formOpen = false">
+        <ion-header>
+          <ion-toolbar>
+            <ion-buttons slot="start"><ion-button @click="formOpen = false">Annuler</ion-button></ion-buttons>
+            <ion-title>Nouvelle tâche</ion-title>
+            <ion-buttons slot="end">
+              <ion-button :strong="true" :disabled="!form.name.trim() || saving" @click="submitForm">
+                <ion-spinner v-if="saving" name="crescent" /><span v-else>Ajouter</span>
+              </ion-button>
+            </ion-buttons>
+          </ion-toolbar>
+        </ion-header>
+        <ion-content class="ion-padding">
+          <ion-list inset>
+            <ion-item>
+              <ion-input v-model="form.name" label="Tâche" label-placement="stacked" placeholder="Nom de la tâche" />
+            </ion-item>
+            <ion-item>
+              <ion-textarea v-model="form.description" label="Description" label-placement="stacked" auto-grow />
+            </ion-item>
+            <ion-item>
+              <ion-input v-model="form.date" type="date" label="Échéance" label-placement="stacked" />
+            </ion-item>
+          </ion-list>
+          <ion-list inset>
+            <ion-item>
+              <ion-select v-model="form.client_id" label="Client" label-placement="stacked" interface="action-sheet" placeholder="Aucun">
+                <ion-select-option :value="null">Aucun</ion-select-option>
+                <ion-select-option v-for="c in clients" :key="c.id" :value="c.id">{{ c.name }}</ion-select-option>
+              </ion-select>
+            </ion-item>
+            <ion-item>
+              <ion-select v-model="form.projet_id" label="Projet" label-placement="stacked" interface="action-sheet" placeholder="Aucun">
+                <ion-select-option :value="null">Aucun</ion-select-option>
+                <ion-select-option v-for="p in projets" :key="p.id" :value="p.id">{{ p.name }}</ion-select-option>
+              </ion-select>
+            </ion-item>
+            <ion-item :disabled="!form.projet_id">
+              <ion-select v-model="form.devis_id" label="Devis" label-placement="stacked" interface="action-sheet" placeholder="Aucun">
+                <ion-select-option :value="null">Aucun</ion-select-option>
+                <ion-select-option v-for="d in devis" :key="d.id" :value="d.id">{{ d.reference }}</ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-list>
+        </ion-content>
+      </ion-modal>
     </ion-content>
   </ion-page>
 </template>
@@ -363,8 +524,23 @@ const dateLine = (d: Date) => {
 }
 
 /* Ajout */
-.new-task {
+.new-row {
+  display: flex;
+  align-items: center;
   margin-top: 40px;
+}
+.add-btn {
+  font-size: 1.6rem;
+  color: var(--pl-accent);
+}
+.link {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--pl-muted);
+  text-decoration: none;
+}
+.new-task {
+  flex: 1;
   background: none;
   border: 0;
   outline: none;

@@ -69,11 +69,14 @@ export interface Tache {
   end_date: string | null;
   priority?: { id: number; name: string } | null;
   statut?: { id: number; name: string } | null;
+  client_id?: number | null;
+  projet_id?: number | null;
+  devis_id?: number | null;
+  client?: { id: number; name: string } | null;
+  projet?: { id: number; name: string; client_id?: number } | null;
 }
 
 export interface TacheDetail extends Tache {
-  client?: { id: number; name: string } | null;
-  projet?: { id: number; name: string } | null;
   subtasks?: { id: number; name: string; status_id: number | null }[];
 }
 
@@ -170,4 +173,31 @@ export async function setTaskStatut(id: number, statut_id: number) {
 export async function createDayTask(name: string, date: string): Promise<Tache> {
   const { data } = await api.post("/tasks", { name, expiration_date: date, statut_id: 1, priority_id: 1 });
   return data.data;
+}
+
+export interface NewTask {
+  name: string;
+  description?: string | null;
+  expiration_date: string;
+  client_id?: number | null;
+  projet_id?: number | null;
+  devis_id?: number | null;
+}
+
+/** Tâche ajoutée manuellement au planning, liée ou non à un client, un projet ou un devis */
+export async function createTask(task: NewTask): Promise<Tache> {
+  const { data } = await api.post("/tasks", { statut_id: 1, priority_id: 1, ...task });
+  return data.data;
+}
+
+/** Clients pour les listes de choix */
+export async function listClientsLite(): Promise<{ id: number; name: string }[]> {
+  const { data } = await api.get("/clients", { params: { per_page: 100 } });
+  return normalizeList<{ id: number; name: string }>(data).items;
+}
+
+/** Projets d'un client (ou tous) pour les listes de choix */
+export async function listProjetsLite(clientId?: number | null): Promise<Projet[]> {
+  const { data } = await api.get("/projets", { params: { per_page: 100, client_id: clientId || undefined } });
+  return normalizeList<Projet>(data).items;
 }
