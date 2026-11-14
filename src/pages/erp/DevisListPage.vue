@@ -68,7 +68,7 @@ const refresh = async (ev: CustomEvent) => {
 
 <template>
   <ion-page>
-    <Header title="Devis" back="/tabs/home" />
+    <Header title="Devis" />
     <ion-content>
       <ion-refresher slot="fixed" @ionRefresh="refresh"><ion-refresher-content /></ion-refresher>
 

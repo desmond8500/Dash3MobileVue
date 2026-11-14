@@ -82,7 +82,7 @@ const clearClient = () => router.replace("/tabs/home/erp/projets");
 
 <template>
   <ion-page>
-    <Header title="Projets" back="/tabs/home" />
+    <Header title="Projets" />
     <ion-content>
       <ion-refresher slot="fixed" @ionRefresh="refresh"><ion-refresher-content /></ion-refresher>
 

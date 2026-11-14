@@ -132,7 +132,7 @@ const fieldError = (name: string) => fieldErrors.value[name]?.[0];
 
 <template>
   <ion-page>
-    <Header :title="isEdit ? 'Modifier l\'article' : 'Nouvel article'" />
+    <Header :title="isEdit ? 'Modifier l\'article' : 'Nouvel article'" detail />
     <ion-content>
       <div v-if="loading" class="ion-text-center ion-padding"><ion-spinner name="crescent" /></div>
 

@@ -47,7 +47,7 @@ const table = Object.entries(GALAXY_CODES).map(([char, code]) => ({ char: char =
 
 <template>
   <ion-page>
-    <Header title="Nomenclature Galaxy" back="/tabs/home" />
+    <Header title="Nomenclature Galaxy" />
     <ion-content>
       <ion-list inset>
         <ion-list-header><ion-label>Texte à convertir</ion-label></ion-list-header>
