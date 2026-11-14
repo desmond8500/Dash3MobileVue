@@ -28,9 +28,9 @@ Version mobile de Dash3
 
 ## ERP
 
-- [ ] Projets (liste et détail)
-- [ ] Devis (liste et détail)
-- [ ] Tâches (liste et détail)
+- [x] Projets (liste et détail)
+- [x] Devis (liste et détail)
+- [x] Tâches (liste et détail)
 
 ## Outils
 
