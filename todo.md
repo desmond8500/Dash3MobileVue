@@ -4,11 +4,16 @@
 
 Version mobile de Dash3
 
-## Planning
+## page projet
 
-- [x] ajouter manuellement des taches au planning et les lier ou non à des projets, clients ou devis
-- [x] Ajouter la page de paramètres
+- [ ] Ajouter la gestion de devis
+- [ ] Ajouter la gestion des taches
+- [ ] Ajouter la gestion des contacts
+- [ ] Ajouter la gestion des journaux
+- [ ] Ajouter la gestion des notes
+- [ ] Les devis, taches, et journeaux doivent rediriger vers de nouvelles pages
 
-## Page article
 
-- [x] ajouter tous les élements de la page du coté de Dash3
+## Page de tache
+
+- [ ] Ajouter des boutons de validation et d'annulation
