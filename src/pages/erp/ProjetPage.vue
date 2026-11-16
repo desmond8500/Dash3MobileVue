@@ -33,6 +33,7 @@ import { computed, ref } from "vue";
 import { useRoute } from "vue-router";
 import Header from "@/components/header.vue";
 import EntityFormModal from "@/components/EntityFormModal.vue";
+import JournalCard from "@/components/JournalCard.vue";
 import type { FieldDef } from "@/components/formFields";
 import {
   DEVIS_STATUSES,
@@ -41,6 +42,7 @@ import {
   createDevis,
   dayKey,
   deleteContact,
+  deleteJournal,
   deleteNote,
   devisStatusColor,
   formatDate,
@@ -181,7 +183,7 @@ const formTitle = computed(() => {
     devis: "Nouveau devis",
     tache: "Nouvelle tâche",
     contact: edit ? "Modifier le contact" : "Nouveau contact",
-    journal: "Nouveau journal",
+    journal: edit ? "Modifier le journal" : "Nouveau journal",
     note: edit ? "Modifier la note" : "Nouvelle note",
   }[formKind.value];
 });
@@ -215,6 +217,10 @@ const submit = async (values: Record<string, any>) => {
       break;
     }
     case "journal": {
+      if (editing.value) {
+        await saveJournal(values, editing.value.id);
+        break;
+      }
       const j = await saveJournal({ ...values, projet_id: p.id });
       pendingNav = withFrom(`/tabs/home/erp/journaux/${j.id}`, selfPath.value);
       break;
@@ -232,7 +238,7 @@ const savedMessage = () =>
   ({
     devis: "Devis créé",
     tache: "Tâche créée",
-    journal: "Journal créé",
+    journal: editing.value ? "Journal modifié" : "Journal créé",
     contact: editing.value ? "Contact modifié" : "Contact ajouté",
     note: editing.value ? "Note modifiée" : "Note ajoutée",
   })[formKind.value];
@@ -273,6 +279,19 @@ const removeContact = async (c: ProjetContact) => {
   try {
     await deleteContact(c.id);
     await toast("Contact supprimé");
+    await load(false);
+  } catch (err) {
+    await toast(errorMessage(err), "danger");
+  }
+};
+
+// ---------- Journaux ----------
+
+const removeJournal = async (j: ProjetDetail["journals"][number]) => {
+  if (!(await confirmAction("Supprimer le journal", `Supprimer « ${j.title || "ce journal"} » ?`))) return;
+  try {
+    await deleteJournal(j.id);
+    await toast("Journal supprimé");
     await load(false);
   } catch (err) {
     await toast(errorMessage(err), "danger");
@@ -378,22 +397,26 @@ const removeNote = async (n: ProjetNote) => {
           </ion-item>
         </ion-list>
 
-        <!-- Journal : ouverture sur la page du journal -->
-        <ion-list v-if="tab === 'journal'" inset>
-          <ion-item button :detail="false" @click="openForm('journal')">
-            <ion-icon slot="start" :icon="addCircleOutline" color="primary" aria-hidden="true" />
-            <ion-label color="primary">Nouveau journal</ion-label>
-          </ion-item>
-          <ion-item v-if="!counts.journal" lines="none"><ion-text color="medium">Aucune entrée</ion-text></ion-item>
-          <ion-item v-for="j in journals" :key="j.id" :router-link="withFrom(`/tabs/home/erp/journaux/${j.id}`, selfPath)" detail>
-            <ion-label class="ion-text-wrap">
-              <h3>{{ j.title || "—" }}</h3>
-              <p v-if="j.type">{{ j.type }}</p>
-              <p v-if="j.description" class="clamp">{{ j.description }}</p>
-            </ion-label>
-            <ion-note slot="end">{{ formatDate(j.date) }}</ion-note>
-          </ion-item>
-        </ion-list>
+        <!-- Journal : cartes façon Dash3 (bloc date, type, titre) ; menu ⋮ pour modifier ou supprimer -->
+        <template v-if="tab === 'journal'">
+          <ion-list inset>
+            <ion-item button :detail="false" lines="none" @click="openForm('journal')">
+              <ion-icon slot="start" :icon="addCircleOutline" color="primary" aria-hidden="true" />
+              <ion-label color="primary">Nouveau journal</ion-label>
+            </ion-item>
+          </ion-list>
+          <p v-if="!counts.journal" class="ion-padding-horizontal empty"><ion-text color="medium">Aucune entrée</ion-text></p>
+          <div v-else class="journal-cards">
+            <JournalCard
+              v-for="j in journals"
+              :key="j.id"
+              :journal="j"
+              :to="withFrom(`/tabs/home/erp/journaux/${j.id}`, selfPath)"
+              @edit="openForm('journal', j)"
+              @remove="removeJournal(j)"
+            />
+          </div>
+        </template>
 
         <!-- Notes : modification sur place, glisser pour supprimer -->
         <ion-list v-if="tab === 'notes'" inset>
@@ -443,10 +466,13 @@ const removeNote = async (n: ProjetNote) => {
 .pre {
   white-space: pre-line;
 }
-.clamp {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+.journal-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0 16px 16px;
+}
+.empty {
+  margin: 0;
 }
 </style>

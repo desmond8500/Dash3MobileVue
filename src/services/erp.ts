@@ -20,7 +20,7 @@ export interface ProjetDetail extends Projet {
   tasks: { id: number; name: string; statut_id: number | null; priority_id: number | null; expiration_date: string | null }[];
   buildings: { id: number; name: string }[];
   contacts: { id: number; firstname: string | null; lastname: string | null; fonction: string | null; societe: string | null; phone: string | null; email: string | null }[];
-  journals: { id: number; title: string | null; date: string | null; description: string | null; type?: string | null }[];
+  journals: { id: number; title: string | null; date: string | null; description: string | null; type?: string | null; devis_id?: number | null }[];
 }
 
 export type ProjetContact = ProjetDetail["contacts"][number];
