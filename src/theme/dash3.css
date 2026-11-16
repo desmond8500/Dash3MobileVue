@@ -130,6 +130,10 @@ ion-tab-bar {
   box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.06);
   overflow: visible;
   contain: none;
+  /* Passe au-dessus du contenu des pages (ion-router-outlet, z-index 0),
+     sinon le haut du rond actif est masqué par la page. */
+  position: relative;
+  z-index: 10;
 }
 ion-tab-button {
   --color: var(--dash-muted);
@@ -137,6 +141,10 @@ ion-tab-button {
   overflow: visible;
   contain: none;
   font-size: 0.7rem;
+}
+/* Le bouton interne (shadow DOM) a overflow: hidden et rognait le rond surélevé. */
+ion-tab-button::part(native) {
+  overflow: visible;
 }
 ion-tab-button ion-icon {
   font-size: 22px;
