@@ -17,3 +17,23 @@ Version mobile de Dash3
 ## Page de tache
 
 - [ ] Ajouter des boutons de validation et d'annulation
+
+## Page des marques
+
+- [ ] afficher les logo à coté
+
+
+## Page des forunisseurs
+
+- [ ] afficher les logo à coté
+
+
+## Page des articles
+
+- [ ] donner la possibilité d'ajouter un logo à un article
+
+## Page de devis
+
+- [ ] ajouter une section
+- [ ] ajouter un article
+- [ ] ajouter les dépenses et les achats,
