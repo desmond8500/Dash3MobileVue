@@ -344,3 +344,22 @@ export async function saveNote(values: Record<string, any>, id?: number): Promis
 export async function deleteNote(id: number) {
   await api.delete(`/projet_notes/${id}`);
 }
+
+/** PDF du journal, même rendu que Dash3 (GET /journal_pdf/{id}) */
+export async function getJournalPdf(id: number | string): Promise<Blob> {
+  try {
+    const { data } = await api.get(`/journal_pdf/${id}`, { responseType: "blob" });
+    return data;
+  } catch (err: any) {
+    // L'erreur arrive aussi en blob : on la relit en JSON pour afficher le message
+    const body = err?.response?.data;
+    if (body instanceof Blob) {
+      try {
+        err.response.data = JSON.parse(await body.text());
+      } catch {
+        err.response.data = {};
+      }
+    }
+    throw err;
+  }
+}

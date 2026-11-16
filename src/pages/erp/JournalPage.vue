@@ -20,7 +20,7 @@ import {
   onIonViewWillEnter,
   useIonRouter,
 } from "@ionic/vue";
-import { createOutline, trashOutline } from "ionicons/icons";
+import { createOutline, documentTextOutline, trashOutline } from "ionicons/icons";
 import { computed, ref } from "vue";
 import { useRoute } from "vue-router";
 import Header from "@/components/header.vue";
@@ -39,6 +39,7 @@ import {
 } from "@/services/erp";
 import { backTarget, confirmAction, errorMessage, toast, selfLink, withFrom } from "@/services/ui";
 import { goUp } from "@/services/navigation";
+import { openJournalPdf } from "@/services/pdf";
 
 const route = useRoute();
 const router = useIonRouter();
@@ -209,6 +210,10 @@ const remove = async () => {
         </ion-list>
 
         <ion-list inset>
+          <ion-item button :detail="false" @click="openJournalPdf(journal)">
+            <ion-icon slot="start" :icon="documentTextOutline" color="primary" aria-hidden="true" />
+            <ion-label color="primary">PDF du journal</ion-label>
+          </ion-item>
           <ion-item button :detail="false" @click="modalOpen = true">
             <ion-icon slot="start" :icon="createOutline" color="primary" aria-hidden="true" />
             <ion-label color="primary">Modifier le journal</ion-label>

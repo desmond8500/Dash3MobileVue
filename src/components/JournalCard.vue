@@ -3,11 +3,12 @@
  * Carte d'un journal, d'après la carte Dash3 (_card/journal_card) :
  * bloc date à gauche (jour, numéro, mois, année), type en capitales, titre.
  * Ajouts pour le mobile : aperçu de la description, « Aujourd'hui » / « Hier »,
- * toute la carte ouvre le journal, menu ⋮ (Ouvrir, Modifier, Supprimer).
+ * toute la carte ouvre le journal, menu ⋮ (Ouvrir, PDF, Modifier, Supprimer).
  */
 import { IonIcon, actionSheetController, useIonRouter } from "@ionic/vue";
 import { ellipsisVertical } from "ionicons/icons";
 import { computed } from "vue";
+import { openJournalPdf } from "@/services/pdf";
 
 const props = defineProps<{
   journal: { id: number; title: string | null; date: string | null; description: string | null; type?: string | null };
@@ -68,6 +69,7 @@ const menu = async () => {
     header: props.journal.title || "Journal",
     buttons: [
       { text: "Ouvrir", handler: open },
+      { text: "PDF", handler: () => openJournalPdf(props.journal) },
       { text: "Modifier", handler: () => emit("edit") },
       { text: "Supprimer", role: "destructive", handler: () => emit("remove") },
       { text: "Annuler", role: "cancel" },
