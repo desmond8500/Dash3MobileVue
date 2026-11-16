@@ -1,0 +1,66 @@
+# Mise à jour à chaud (OTA) de l'appli mobile.
+#
+# À chaque push sur main : build Vite, zip du dossier dist, publication d'une
+# Release GitHub "v<versionName>-<n° de run>" contenant dist.zip.
+# L'appli (src/services/liveUpdate.ts) interroge la dernière release et installe
+# le bundle si sa versionName correspond à celle de l'APK installé.
+#
+# Changement natif (plugin, permission, Capacitor) : augmenter versionName dans
+# android/app/build.gradle et réinstaller l'APK. Les anciens APK ne recevront
+# alors plus les nouveaux bundles, qui pourraient dépendre du nouveau code natif.
+name: Live update
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "**.md"
+      - "tests/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: live-update
+  cancel-in-progress: false
+
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Dépendances
+        run: npm install --no-audit --no-fund
+
+      - name: Version du bundle
+        id: version
+        run: |
+          NATIVE=$(grep -oP 'versionName\s+"\K[^"]+' android/app/build.gradle)
+          echo "tag=v${NATIVE}-${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_APP_VERSION: ${{ steps.version.outputs.tag }}
+
+      - name: Zip
+        run: cd dist && zip -qr ../dist.zip .
+
+      - name: Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+          COMMIT_MSG: ${{ github.event.head_commit.message || 'lancement manuel' }}
+        run: |
+          gh release create "$TAG" dist.zip \
+            --title "$TAG" \
+            --notes "Bundle web publié depuis ${GITHUB_SHA::7} : ${COMMIT_MSG}" \
+            --target "$GITHUB_SHA" \
+            --latest
