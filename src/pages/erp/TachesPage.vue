@@ -88,7 +88,7 @@ const priorityName = (t: Tache) => t.priority?.name ?? TASK_PRIORITY_NAMES[t.pri
 
 <template>
   <ion-page>
-    <Header title="Tâches" />
+    <Header title="Tâches" back="/tabs/home" />
     <ion-content>
       <ion-refresher slot="fixed" @ionRefresh="refresh"><ion-refresher-content /></ion-refresher>
 

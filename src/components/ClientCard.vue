@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { IonItem,IonThumbnail,IonLabel } from "@ionic/vue";
+import { withFrom } from "@/services/ui";
 
 
     defineProps<{
@@ -16,7 +17,7 @@ import { IonItem,IonThumbnail,IonLabel } from "@ionic/vue";
 </script>
 
 <template>
-    <ion-item :router-link="`/tabs/home/erp/projets?client_id=${client.id}&client=${encodeURIComponent(client.name)}`" detail>
+    <ion-item :router-link="withFrom(`/tabs/home/erp/projets?client_id=${client.id}&client=${encodeURIComponent(client.name)}`, '/tabs/home/erp/clients')" detail>
         <ion-thumbnail slot="start">
             <img alt="IMG" :src="client.avatar" />
         </ion-thumbnail>

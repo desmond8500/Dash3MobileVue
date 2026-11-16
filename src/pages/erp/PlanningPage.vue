@@ -40,7 +40,7 @@ import {
   type Projet,
   type Tache,
 } from "@/services/erp";
-import { errorMessage, toast } from "@/services/ui";
+import { errorMessage, toast, withFrom } from "@/services/ui";
 
 const router = useIonRouter();
 
@@ -230,7 +230,7 @@ async function submitForm() {
 
 const linkLine = (t: Tache) => [t.client?.name, t.projet?.name].filter(Boolean).join(" › ");
 const openLinked = (t: Tache) => {
-  if (t.projet?.id) router.push(`/tabs/home/erp/projets/${t.projet.id}`);
+  if (t.projet?.id) router.push(withFrom(`/tabs/home/erp/projets/${t.projet.id}`, "/tabs/planning"));
 };
 
 // ---------- Formatage ----------

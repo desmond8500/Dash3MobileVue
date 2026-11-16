@@ -12,14 +12,20 @@ import {
   IonText,
   onIonViewDidEnter,
 } from "@ionic/vue";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { useRoute } from "vue-router";
 import Header from "@/components/header.vue";
 import { globalSearch, type SearchSection } from "@/services/search";
+import { withFrom } from "@/services/ui";
 
 const route = useRoute();
 
 const query = ref("");
+/** Adresse de la recherche en cours, passée aux résultats (fil d'Ariane, retour après rechargement) */
+const fromSearch = computed(() => {
+  const q = query.value.trim();
+  return q ? `/tabs/search?q=${encodeURIComponent(q)}` : "/tabs/search";
+});
 const loading = ref(false);
 const searched = ref(false);
 const results = ref<{ clients: SearchSection; projets: SearchSection; devis: SearchSection } | null>(null);
@@ -101,7 +107,7 @@ const formatAmount = (n: number | null | undefined) =>
           <ion-item
             v-for="c in results.clients.items"
             :key="'c' + c.id"
-            :router-link="`/tabs/home/erp/projets?client_id=${c.id}&client=${encodeURIComponent(c.name)}`"
+            :router-link="withFrom(`/tabs/home/erp/projets?client_id=${c.id}&client=${encodeURIComponent(c.name)}`, fromSearch)"
             detail
           >
             <ion-label>
@@ -120,7 +126,7 @@ const formatAmount = (n: number | null | undefined) =>
           <ion-item v-if="results.projets.error" lines="none">
             <ion-text color="danger">{{ results.projets.error }}</ion-text>
           </ion-item>
-          <ion-item v-for="p in results.projets.items" :key="'p' + p.id" :router-link="`/tabs/home/erp/projets/${p.id}`" detail>
+          <ion-item v-for="p in results.projets.items" :key="'p' + p.id" :router-link="withFrom(`/tabs/home/erp/projets/${p.id}`, fromSearch)" detail>
             <ion-label>
               <h3>{{ p.name }}</h3>
               <p>{{ p.description }}</p>
@@ -137,7 +143,7 @@ const formatAmount = (n: number | null | undefined) =>
           <ion-item v-if="results.devis.error" lines="none">
             <ion-text color="danger">{{ results.devis.error }}</ion-text>
           </ion-item>
-          <ion-item v-for="d in results.devis.items" :key="'d' + d.id" :router-link="`/tabs/home/erp/devis/${d.id}`" detail>
+          <ion-item v-for="d in results.devis.items" :key="'d' + d.id" :router-link="withFrom(`/tabs/home/erp/devis/${d.id}`, fromSearch)" detail>
             <ion-label>
               <h3>{{ d.reference }}</h3>
               <p>{{ d.client_name }} — {{ d.projet_name }}</p>

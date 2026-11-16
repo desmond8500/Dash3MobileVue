@@ -42,3 +42,26 @@ export function normalizeList<T = any>(body: any) {
     total: Number(meta.total ?? items.length),
   };
 }
+
+/**
+ * Lien de retour d'une page de détail : la page d'origine passée en `?from=`
+ * (ex. le projet qui a ouvert le devis), sinon la liste par défaut.
+ */
+export function backTarget(query: Record<string, unknown>, fallback: string): string {
+  const from = Array.isArray(query.from) ? query.from[0] : query.from;
+  return typeof from === "string" && from.startsWith("/tabs/") ? from : fallback;
+}
+
+/** Ajoute `from=<origine>` à un lien de page de détail (le lien peut déjà avoir des paramètres) */
+export const withFrom = (path: string, from: string) =>
+  `${path}${path.includes("?") ? "&" : "?"}from=${encodeURIComponent(from)}`;
+
+/**
+ * Adresse de la page courante à passer en `?from=` à ses pages de détail,
+ * en gardant sa propre origine : le fil d'Ariane et les retours suivent ainsi
+ * toute la chaîne (projet › journal › tâche).
+ */
+export function selfLink(base: string, query: Record<string, unknown>): string {
+  const from = backTarget(query, "");
+  return from ? withFrom(base, from) : base;
+}

@@ -61,7 +61,7 @@ onMounted(getClients);
 
 <template>
   <ion-page>
-    <Header title="Clients" />
+    <Header title="Clients" back="/tabs/home" />
     <ion-content class="ion-padding">
         <ion-searchbar :animated="true" placeholder="Client" v-model="search" :debounce="500" @keydown.enter="getClients()"></ion-searchbar>
       <p v-if="loading">Chargement...</p>

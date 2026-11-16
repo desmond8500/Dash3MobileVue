@@ -70,6 +70,7 @@ import {
   type Dependance,
 } from "@/services/stock";
 import { confirmAction, errorMessage, toast } from "@/services/ui";
+import { goUp } from "@/services/navigation";
 
 const route = useRoute();
 const router = useIonRouter();
@@ -126,7 +127,7 @@ const remove = async () => {
   if (!(await confirmAction("Supprimer l'article", `Supprimer « ${article.value.designation} » ?`))) return;
   await safely(async () => {
     await deleteArticle(article.value!.id);
-    router.navigate("/tabs/home/stock/articles", "back", "replace");
+    goUp(router, "/tabs/home/stock/articles", "replace");
   }, "Article supprimé");
 };
 

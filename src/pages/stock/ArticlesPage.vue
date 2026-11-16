@@ -78,7 +78,7 @@ const formatPrice = (n: number | null) =>
 
 <template>
   <ion-page>
-    <Header title="Articles" />
+    <Header title="Articles" back="/tabs/home" />
     <ion-content>
       <ion-refresher slot="fixed" @ionRefresh="refresh">
         <ion-refresher-content />
