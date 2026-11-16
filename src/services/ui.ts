@@ -54,3 +54,13 @@ export function backTarget(query: Record<string, unknown>, fallback: string): st
 
 /** Ajoute `?from=<origine>` à un lien de page de détail */
 export const withFrom = (path: string, from: string) => `${path}?from=${encodeURIComponent(from)}`;
+
+/**
+ * Adresse de la page courante à passer en `?from=` à ses pages de détail,
+ * en gardant sa propre origine : le fil d'Ariane et les retours suivent ainsi
+ * toute la chaîne (projet › journal › tâche).
+ */
+export function selfLink(base: string, query: Record<string, unknown>): string {
+  const from = backTarget(query, "");
+  return from ? withFrom(base, from) : base;
+}

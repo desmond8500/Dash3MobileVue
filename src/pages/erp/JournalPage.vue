@@ -37,12 +37,12 @@ import {
   type JournalDetail,
   type Tache,
 } from "@/services/erp";
-import { backTarget, confirmAction, errorMessage, toast, withFrom } from "@/services/ui";
+import { backTarget, confirmAction, errorMessage, toast, selfLink, withFrom } from "@/services/ui";
 
 const route = useRoute();
 const router = useIonRouter();
 const id = computed(() => route.params.id as string);
-const selfPath = computed(() => `/tabs/home/erp/journaux/${id.value}`);
+const selfPath = computed(() => selfLink(`/tabs/home/erp/journaux/${id.value}`, route.query));
 
 const journal = ref<JournalDetail | null>(null);
 const loading = ref(true);

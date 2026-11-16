@@ -55,7 +55,7 @@ import {
   type ProjetDetail,
   type ProjetNote,
 } from "@/services/erp";
-import { confirmAction, errorMessage, toast, withFrom } from "@/services/ui";
+import { confirmAction, errorMessage, toast, selfLink, withFrom } from "@/services/ui";
 
 type Tab = "devis" | "taches" | "contacts" | "journal" | "notes";
 type FormKind = "devis" | "tache" | "contact" | "journal" | "note";
@@ -64,7 +64,7 @@ const route = useRoute();
 const router = useIonRouter();
 const id = computed(() => route.params.id as string);
 /** Adresse de cette page, passée aux pages de détail pour le bouton retour */
-const selfPath = computed(() => `/tabs/home/erp/projets/${id.value}`);
+const selfPath = computed(() => selfLink(`/tabs/home/erp/projets/${id.value}`, route.query));
 
 const projet = ref<ProjetDetail | null>(null);
 const notes = ref<ProjetNote[]>([]);
