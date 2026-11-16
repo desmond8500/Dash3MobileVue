@@ -27,6 +27,7 @@ const LISTS: Record<string, string> = {
   devis: "Devis",
   taches: "Tâches",
   journaux: "Journaux",
+  clients: "Clients",
   galaxy: "Galaxy Dimension",
 };
 /** Élément d'une liste (segment suivant = identifiant) */
@@ -46,7 +47,6 @@ const TABS: Record<string, string> = {
   search: "Recherche",
   settings: "Paramètres",
   favorites: "Favoris",
-  customers: "Clients",
 };
 
 /** Noms retenus des pages visitées, par chemin (sans `?…`) */

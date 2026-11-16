@@ -38,6 +38,7 @@ import {
   type Tache,
 } from "@/services/erp";
 import { backTarget, confirmAction, errorMessage, toast, selfLink, withFrom } from "@/services/ui";
+import { goUp } from "@/services/navigation";
 
 const route = useRoute();
 const router = useIonRouter();
@@ -108,7 +109,7 @@ const remove = async () => {
     const to = back.value;
     await deleteJournal(journal.value.id);
     await toast("Journal supprimé");
-    router.navigate(to, "back", "push");
+    goUp(router, to, "replace");
   } catch (err) {
     await toast(errorMessage(err), "danger");
   }
@@ -133,7 +134,7 @@ const remove = async () => {
         </div>
 
         <ion-list inset>
-          <ion-item v-if="journal.projet" :router-link="`/tabs/home/erp/projets/${journal.projet.id}`" detail>
+          <ion-item v-if="journal.projet" button detail @click="goUp(router, `/tabs/home/erp/projets/${journal.projet.id}`)">
             <ion-label>Projet</ion-label><ion-note slot="end">{{ journal.projet.name }}</ion-note>
           </ion-item>
           <ion-item v-if="journal.projet?.client" lines="none">

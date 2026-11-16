@@ -3,7 +3,8 @@
  * En-tête d'après le design Dash3 :
  *  - page principale (sans `back`) : avatar, « Bon retour 👋 », nom, boutons ronds
  *    Recherche et Menu ; le titre de la page s'affiche en tête de la feuille blanche ;
- *  - page de détail (avec `back`) : bouton retour rond et titre centré.
+ *  - page de détail (avec `back`) : bouton retour rond et titre centré ; le retour
+ *    revient à la page précédente, `back` ne sert que s'il n'y a pas d'historique.
  * La feuille blanche aux coins arrondis commence sous la barre bleu canard ;
  * elle porte le fil d'Ariane (Accueil › Projets › Chantier X › …).
  */
@@ -13,6 +14,7 @@ import { computed, nextTick, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { currentUser } from "@/services/auth";
 import { buildCrumbs, setCrumbLabel, type Crumb } from "@/services/breadcrumb";
+import { goBack as navBack, goUp } from "@/services/navigation";
 
 const router = useIonRouter();
 const vueRouter = useRouter();
@@ -20,7 +22,7 @@ const route = useRoute();
 
 const props = defineProps<{
   title: string;
-  /** Lien de retour ; présent = page de détail */
+  /** Page parente, utilisée pour le retour s'il n'y a pas d'historique ; présent = page de détail */
   back?: string;
   /** Force le mode détail (bouton retour) même sans lien */
   detail?: boolean;
@@ -61,8 +63,10 @@ const crumbs = computed<Crumb[]>(() =>
   buildCrumbs(ownFullPath.value, props.title, (p) => vueRouter.resolve(p).matched.length > 0)
 );
 
+// Fil d'Ariane : on remonte (retour si c'est la page précédente, sinon la page
+// devient la racine de l'onglet : pas d'empilement)
 const goTo = (c: Crumb) => {
-  if (c.to) router.navigate(c.to, "back", "push");
+  if (c.to) goUp(router, c.to, "root");
 };
 
 // Sur un fil trop long, on fait défiler jusqu'à la page courante
@@ -76,13 +80,7 @@ watch(
   { immediate: true }
 );
 
-const goBack = () => {
-  if (props.back) {
-    router.navigate(props.back, "back", "push");
-  } else {
-    router.back();
-  }
-};
+const goBack = () => navBack(router, props.back);
 </script>
 
 <template>

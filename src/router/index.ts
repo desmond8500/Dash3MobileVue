@@ -27,6 +27,7 @@ const routes: Array<RouteRecordRaw> = [
       { path: 'home/erp/taches', component: () => import('@/pages/erp/TachesPage.vue') },
       { path: 'home/erp/taches/:id', component: () => import('@/pages/erp/TachePage.vue') },
       { path: 'home/erp/journaux/:id', component: () => import('@/pages/erp/JournalPage.vue') },
+      { path: 'home/erp/clients', component: () => import('@/pages/ClientsPage.vue') },
       { path: 'home/tools/galaxy', component: () => import('@/pages/tools/GalaxyPage.vue') },
 
       { path: 'planning', component: () => import('@/pages/erp/PlanningPage.vue') },
@@ -35,7 +36,7 @@ const routes: Array<RouteRecordRaw> = [
       { path: 'favorites', component: () => import('@/pages/FavoritesPage.vue') },
 
       // ERP
-      { path: 'customers', component: () => import('@/pages/ClientsPage.vue') },
+      { path: 'customers', redirect: '/tabs/home/erp/clients' },
 
       // Anciennes adresses
       { path: 'items', redirect: '/tabs/home/stock/articles' },

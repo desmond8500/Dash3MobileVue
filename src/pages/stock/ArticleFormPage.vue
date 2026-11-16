@@ -30,6 +30,7 @@ import {
   type Provider,
 } from "@/services/stock";
 import { errorMessage, toast } from "@/services/ui";
+import { goUp } from "@/services/navigation";
 
 const route = useRoute();
 const router = useIonRouter();
@@ -118,7 +119,10 @@ const save = async () => {
     };
     const saved = await saveArticle(payload, id.value);
     await toast(isEdit.value ? "Article modifié" : "Article créé");
-    router.navigate(`/tabs/home/stock/articles/${saved?.id ?? id.value}`, "back", "replace");
+    const articlePath = `/tabs/home/stock/articles/${saved?.id ?? id.value}`;
+    // Modification : retour à la fiche (rechargée à l'affichage) ; création : la fiche remplace le formulaire
+    if (isEdit.value) goUp(router, articlePath, "replace");
+    else router.navigate(articlePath, "forward", "replace");
   } catch (err: any) {
     fieldErrors.value = err?.response?.data?.errors ?? {};
     error.value = errorMessage(err);
@@ -132,7 +136,7 @@ const fieldError = (name: string) => fieldErrors.value[name]?.[0];
 
 <template>
   <ion-page>
-    <Header :title="isEdit ? 'Modifier l\'article' : 'Nouvel article'" detail />
+    <Header :title="isEdit ? 'Modifier l\'article' : 'Nouvel article'" :back="isEdit ? `/tabs/home/stock/articles/${id}` : '/tabs/home/stock/articles'" />
     <ion-content>
       <div v-if="loading" class="ion-text-center ion-padding"><ion-spinner name="crescent" /></div>
 

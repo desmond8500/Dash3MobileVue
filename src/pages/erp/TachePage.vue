@@ -46,6 +46,7 @@ import {
   type TacheDetail,
 } from "@/services/erp";
 import { backTarget, confirmAction, errorMessage, toast } from "@/services/ui";
+import { goUp } from "@/services/navigation";
 
 const route = useRoute();
 const router = useIonRouter();
@@ -133,7 +134,7 @@ const remove = async () => {
     const to = back.value;
     await deleteTask(tache.value.id);
     await toast("Tâche supprimée");
-    router.navigate(to, "back", "push");
+    goUp(router, to, "replace");
   } catch (err) {
     await toast(errorMessage(err), "danger");
   }
@@ -160,7 +161,7 @@ const remove = async () => {
           <ion-item v-if="tache.client" lines="full">
             <ion-label>Client</ion-label><ion-note slot="end">{{ tache.client.name }}</ion-note>
           </ion-item>
-          <ion-item v-if="tache.projet" :router-link="`/tabs/home/erp/projets/${tache.projet.id}`" detail>
+          <ion-item v-if="tache.projet" button detail @click="goUp(router, `/tabs/home/erp/projets/${tache.projet.id}`)">
             <ion-label>Projet</ion-label><ion-note slot="end">{{ tache.projet.name }}</ion-note>
           </ion-item>
           <ion-item><ion-label>Début</ion-label><ion-note slot="end">{{ formatDate(tache.start_date) }}</ion-note></ion-item>

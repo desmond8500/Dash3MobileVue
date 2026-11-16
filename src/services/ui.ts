@@ -52,8 +52,9 @@ export function backTarget(query: Record<string, unknown>, fallback: string): st
   return typeof from === "string" && from.startsWith("/tabs/") ? from : fallback;
 }
 
-/** Ajoute `?from=<origine>` à un lien de page de détail */
-export const withFrom = (path: string, from: string) => `${path}?from=${encodeURIComponent(from)}`;
+/** Ajoute `from=<origine>` à un lien de page de détail (le lien peut déjà avoir des paramètres) */
+export const withFrom = (path: string, from: string) =>
+  `${path}${path.includes("?") ? "&" : "?"}from=${encodeURIComponent(from)}`;
 
 /**
  * Adresse de la page courante à passer en `?from=` à ses pages de détail,
