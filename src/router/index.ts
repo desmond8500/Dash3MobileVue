@@ -26,6 +26,7 @@ const routes: Array<RouteRecordRaw> = [
       { path: 'home/erp/devis/:id', component: () => import('@/pages/erp/DevisPage.vue') },
       { path: 'home/erp/taches', component: () => import('@/pages/erp/TachesPage.vue') },
       { path: 'home/erp/taches/:id', component: () => import('@/pages/erp/TachePage.vue') },
+      { path: 'home/erp/journaux/:id', component: () => import('@/pages/erp/JournalPage.vue') },
       { path: 'home/tools/galaxy', component: () => import('@/pages/tools/GalaxyPage.vue') },
 
       { path: 'planning', component: () => import('@/pages/erp/PlanningPage.vue') },

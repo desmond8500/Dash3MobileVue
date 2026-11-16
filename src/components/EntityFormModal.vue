@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * Fenêtre de formulaire générique (ajout / modification) pour les entités
- * simples : fournisseurs, marques…
+ * simples : fournisseurs, marques, contacts, notes, journaux…
  */
 import {
   IonModal,
@@ -15,6 +15,8 @@ import {
   IonItem,
   IonInput,
   IonTextarea,
+  IonSelect,
+  IonSelectOption,
   IonSpinner,
   IonText,
 } from "@ionic/vue";
@@ -43,7 +45,11 @@ watch(
   () => props.isOpen,
   (open) => {
     if (!open) return;
-    for (const f of props.fields) values[f.name] = props.initial?.[f.name] ?? "";
+    for (const f of props.fields) {
+      const v = props.initial?.[f.name] ?? (f.type === "select" ? null : "");
+      // Les dates de l'API (AAAA-MM-JJ ou ISO complet) sont ramenées au format du champ date
+      values[f.name] = f.type === "date" && typeof v === "string" ? v.slice(0, 10) : v;
+    }
     error.value = "";
     fieldErrors.value = {};
   },
@@ -98,8 +104,19 @@ const fieldError = (name: string) => fieldErrors.value[name]?.[0];
         <p v-if="error" class="ion-padding-horizontal"><ion-text color="danger">{{ error }}</ion-text></p>
         <ion-list inset>
           <ion-item v-for="f in fields" :key="f.name">
+            <ion-select
+              v-if="f.type === 'select'"
+              v-model="values[f.name]"
+              :label="f.label + (f.required ? ' *' : '')"
+              label-placement="stacked"
+              interface="action-sheet"
+              :cancel-text="'Annuler'"
+              placeholder="—"
+            >
+              <ion-select-option v-for="o in f.options ?? []" :key="String(o.value)" :value="o.value">{{ o.label }}</ion-select-option>
+            </ion-select>
             <ion-textarea
-              v-if="f.type === 'textarea'"
+              v-else-if="f.type === 'textarea'"
               v-model="values[f.name]"
               :label="f.label + (f.required ? ' *' : '')"
               label-placement="stacked"

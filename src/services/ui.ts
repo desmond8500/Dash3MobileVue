@@ -42,3 +42,15 @@ export function normalizeList<T = any>(body: any) {
     total: Number(meta.total ?? items.length),
   };
 }
+
+/**
+ * Lien de retour d'une page de détail : la page d'origine passée en `?from=`
+ * (ex. le projet qui a ouvert le devis), sinon la liste par défaut.
+ */
+export function backTarget(query: Record<string, unknown>, fallback: string): string {
+  const from = Array.isArray(query.from) ? query.from[0] : query.from;
+  return typeof from === "string" && from.startsWith("/tabs/") ? from : fallback;
+}
+
+/** Ajoute `?from=<origine>` à un lien de page de détail */
+export const withFrom = (path: string, from: string) => `${path}?from=${encodeURIComponent(from)}`;

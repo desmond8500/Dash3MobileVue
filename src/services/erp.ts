@@ -20,8 +20,10 @@ export interface ProjetDetail extends Projet {
   tasks: { id: number; name: string; statut_id: number | null; priority_id: number | null; expiration_date: string | null }[];
   buildings: { id: number; name: string }[];
   contacts: { id: number; firstname: string | null; lastname: string | null; fonction: string | null; societe: string | null; phone: string | null; email: string | null }[];
-  journals: { id: number; title: string | null; date: string | null; description: string | null }[];
+  journals: { id: number; title: string | null; date: string | null; description: string | null; type?: string | null }[];
 }
+
+export type ProjetContact = ProjetDetail["contacts"][number];
 
 export interface Devis {
   id: number;
@@ -56,6 +58,8 @@ export interface DevisDetail extends Devis {
   sections: { id: number; section: string; ordre: number | null; rows: DevisRow[]; total: number }[];
   acomptes: { id: number; name: string | null; montant: number; date: string | null; statut: string | null }[];
   acompte_total: number;
+  /** Statuts acceptés par l'API pour la modification */
+  statuses?: string[];
 }
 
 export interface Tache {
@@ -137,6 +141,40 @@ export async function getDevis(id: string | number): Promise<DevisDetail> {
   return data.data;
 }
 
+/** Statuts de devis de Dash3 (InvoiceController::statut), si l'API ne les renvoie pas */
+export const DEVIS_STATUSES = [
+  "Proforma",
+  "Nouveau",
+  "En Cours",
+  "En Pause",
+  "Annulé",
+  "Bl a faire",
+  "A Facturer",
+  "Paiement en attente",
+  "Terminé",
+];
+
+export interface NewDevis {
+  projet_id: number;
+  description: string;
+  statut?: string | null;
+  modalite?: string | null;
+  note?: string | null;
+}
+
+/** Crée un devis rattaché à un projet ; la référence est calculée par l'API */
+export async function createDevis(devis: NewDevis): Promise<{ id: number; reference: string }> {
+  const { data } = await api.post("/invoices", devis);
+  return data.data;
+}
+
+/** Modifie un devis ; l'API renvoie le devis complet */
+export async function updateDevis(id: string | number, values: Record<string, any>): Promise<DevisDetail> {
+  const { data } = await api.put(`/invoices/${id}`, values);
+  if (!data?.success) throw { response: { data } };
+  return data.data;
+}
+
 // ---------- Tâches ----------
 
 export async function listTaches(page = 1, search = "", statut: "active" | "finished" | "" = "active") {
@@ -151,6 +189,20 @@ export async function getTache(id: string | number): Promise<TacheDetail> {
   if (!data?.success) throw { response: { data } };
   return data.data;
 }
+
+/** Crée (sans id) ou modifie une tâche ; en modification seuls les champs envoyés changent */
+export async function saveTask(values: Record<string, any>, id?: number | string): Promise<Tache> {
+  const { data } = id ? await api.put(`/tasks/${id}`, values) : await api.post("/tasks", { statut_id: 1, priority_id: 1, ...values });
+  return data.data;
+}
+
+export async function deleteTask(id: number | string) {
+  await api.delete(`/tasks/${id}`);
+}
+
+/** Options de liste de choix pour les statuts et priorités */
+export const TASK_STATUS_OPTIONS = Object.entries(TASK_STATUS_NAMES).map(([value, label]) => ({ value: Number(value), label }));
+export const TASK_PRIORITY_OPTIONS = Object.entries(TASK_PRIORITY_NAMES).map(([value, label]) => ({ value: Number(value), label }));
 
 // ---------- Planning hebdomadaire ----------
 
@@ -200,4 +252,95 @@ export async function listClientsLite(): Promise<{ id: number; name: string }[]>
 export async function listProjetsLite(clientId?: number | null): Promise<Projet[]> {
   const { data } = await api.get("/projets", { params: { per_page: 100, client_id: clientId || undefined } });
   return normalizeList<Projet>(data).items;
+}
+
+// ---------- Contacts (client ou projet) ----------
+
+/** Crée (sans id) ou modifie un contact ; à la création, projet_id ou client_id est obligatoire */
+export async function saveContact(values: Record<string, any>, id?: number) {
+  const { data } = id ? await api.put(`/contacts/${id}`, values) : await api.post("/contacts", values);
+  return data.data as ProjetContact;
+}
+
+export async function deleteContact(id: number) {
+  await api.delete(`/contacts/${id}`);
+}
+
+// ---------- Journaux ----------
+
+export interface Journal {
+  id: number;
+  projet_id: number | null;
+  devis_id: number | null;
+  title: string;
+  date: string | null;
+  description: string | null;
+  type: string | null;
+}
+
+export interface JournalDetail extends Journal {
+  projet?: { id: number; name: string; client_id: number | null; client?: { id: number; name: string } | null } | null;
+  invoices?: { id: number; reference: string; description: string | null; statut: string | null }[];
+  sections?: {
+    id: number;
+    name: string;
+    description: string | null;
+    images?: { id: number; url: string; caption: string | null }[];
+    tasks?: Tache[];
+  }[];
+  intervenants?: {
+    id: number;
+    contact?: { id: number; firstname: string | null; lastname: string | null; fonction: string | null; societe: string | null; phone: string | null } | null;
+    team?: { id: number; firstname: string | null; lastname: string | null; function: string | null } | null;
+  }[];
+  tasks?: Tache[];
+  images?: { id: number; url: string; caption: string | null }[];
+}
+
+export async function getJournal(id: string | number): Promise<JournalDetail> {
+  const { data } = await api.get(`/journaux/${id}`);
+  if (!data?.success) throw { response: { data } };
+  return data.data;
+}
+
+/** Crée (sans id) ou modifie un journal ; title et date sont obligatoires à la création */
+export async function saveJournal(values: Record<string, any>, id?: number | string): Promise<Journal> {
+  const { data } = id ? await api.put(`/journaux/${id}`, values) : await api.post("/journaux", values);
+  return data.data;
+}
+
+export async function deleteJournal(id: number | string) {
+  await api.delete(`/journaux/${id}`);
+}
+
+// ---------- Notes de projet ----------
+
+export interface ProjetNote {
+  id: number;
+  projet_id: number;
+  titre: string;
+  description: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
+/** Notes d'un projet (l'API répond en erreur « Aucune note » quand la liste est vide) */
+export async function listProjetNotes(projetId: number | string): Promise<ProjetNote[]> {
+  try {
+    const { data } = await api.get(`/get_projet_notes/${projetId}`);
+    return Array.isArray(data?.data) ? data.data : [];
+  } catch (err: any) {
+    if (err?.response?.data?.success === false && [400, 404].includes(err.response.status)) return [];
+    throw err;
+  }
+}
+
+/** Crée (sans id) ou modifie une note ; titre et description sont obligatoires */
+export async function saveNote(values: Record<string, any>, id?: number): Promise<ProjetNote> {
+  const { data } = id ? await api.put(`/projet_notes/${id}`, values) : await api.post("/projet_notes", values);
+  return data.data;
+}
+
+export async function deleteNote(id: number) {
+  await api.delete(`/projet_notes/${id}`);
 }

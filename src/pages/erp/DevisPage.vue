@@ -10,13 +10,25 @@ import {
   IonBadge,
   IonSpinner,
   IonText,
+  IonIcon,
   onIonViewWillEnter,
 } from "@ionic/vue";
+import { createOutline } from "ionicons/icons";
 import { computed, ref } from "vue";
 import { useRoute } from "vue-router";
 import Header from "@/components/header.vue";
-import { devisStatusColor, formatAmount, formatDate, getDevis, type DevisDetail } from "@/services/erp";
-import { errorMessage } from "@/services/ui";
+import EntityFormModal from "@/components/EntityFormModal.vue";
+import type { FieldDef } from "@/components/formFields";
+import {
+  DEVIS_STATUSES,
+  devisStatusColor,
+  formatAmount,
+  formatDate,
+  getDevis,
+  updateDevis,
+  type DevisDetail,
+} from "@/services/erp";
+import { backTarget, errorMessage, toast } from "@/services/ui";
 
 const route = useRoute();
 const id = computed(() => route.params.id as string);
@@ -37,13 +49,40 @@ onIonViewWillEnter(async () => {
   }
 });
 
+// Retour vers la page d'origine (projet, journal) ou la liste des devis
+const back = computed(() => backTarget(route.query, "/tabs/home/erp/devis"));
+
+// ---------- Modification ----------
+const fields = computed<FieldDef[]>(() => [
+  {
+    name: "statut",
+    label: "Statut",
+    type: "select",
+    required: true,
+    options: (devis.value?.statuses?.length ? devis.value.statuses : DEVIS_STATUSES).map((s) => ({ value: s, label: s })),
+  },
+  { name: "description", label: "Objet", type: "textarea" },
+  { name: "modalite", label: "Modalités", type: "textarea" },
+  { name: "note", label: "Note", type: "textarea" },
+  { name: "facture_date", label: "Date de facturation", type: "date" },
+  { name: "paydate", label: "Date de paiement", type: "date" },
+]);
+const modalOpen = ref(false);
+const submit = async (values: Record<string, any>) => {
+  devis.value = await updateDevis(id.value, values);
+};
+const onSaved = async () => {
+  modalOpen.value = false;
+  await toast("Devis modifié");
+};
+
 const reste = computed(() => (devis.value ? Number(devis.value.montant || 0) - Number(devis.value.acompte_total || 0) : 0));
 const qty = (n: number) => new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 2 }).format(n);
 </script>
 
 <template>
   <ion-page>
-    <Header :title="devis?.reference || 'Devis'" back="/tabs/home/erp/devis" />
+    <Header :title="devis?.reference || 'Devis'" :back="back" />
     <ion-content>
       <div v-if="loading" class="ion-text-center ion-padding"><ion-spinner name="crescent" /></div>
       <p v-else-if="error" class="ion-padding"><ion-text color="danger">{{ error }}</ion-text></p>
@@ -108,7 +147,24 @@ const qty = (n: number) => new Intl.NumberFormat("fr-FR", { maximumFractionDigit
           <ion-item v-if="devis.modalite"><ion-label class="ion-text-wrap pre">{{ devis.modalite }}</ion-label></ion-item>
           <ion-item v-if="devis.note" lines="none"><ion-label class="ion-text-wrap pre">{{ devis.note }}</ion-label></ion-item>
         </ion-list>
+
+        <ion-list inset>
+          <ion-item button :detail="false" lines="none" @click="modalOpen = true">
+            <ion-icon slot="start" :icon="createOutline" color="primary" aria-hidden="true" />
+            <ion-label color="primary">Modifier le devis</ion-label>
+          </ion-item>
+        </ion-list>
       </template>
+
+      <EntityFormModal
+        :is-open="modalOpen"
+        title="Modifier le devis"
+        :fields="fields"
+        :initial="devis"
+        :submit="submit"
+        @close="modalOpen = false"
+        @saved="onSaved"
+      />
     </ion-content>
   </ion-page>
 </template>
